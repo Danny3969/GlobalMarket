@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GLOBAL MARKET GM | Exportador Global de Frutas Tropicales Frescas</title>
+  <meta name="description" content="Global Market GM es exportador líder de frutas tropicales de alta calidad: Banano Cavendish, Mango, Pitahaya Roja (Red Dragon) y Pitahaya Amarilla (Yellow Dragon) de Ecuador al mundo.">
+  <meta name="keywords" content="Global Market GM, exportacion de frutas, banano ecuador, pitahaya amarilla palora, red dragon fruit, mango exportacion, fresh fruit exporter ecuador">
+  <meta name="author" content="Global Market GM">
+  <meta property="og:title" content="GLOBAL MARKET GM | Global Fresh Fruit Exporter">
+  <meta property="og:description" content="Frutas tropicales premium de exportación: Banano, Mango, Pitahaya Roja y Pitahaya Amarilla con cadena de frío y certificaciones internacionales.">
+  <meta property="og:image" content="assets/images/hero-banner.jpg">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/images/logo.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <aside class="top-bar" aria-label="Información de contacto rápido">
+    <div class="container top-bar-inner">
+      <div class="top-bar-left">
+        <span><i class="fa-solid fa-location-dot"></i> <span data-i18n="topbar_location">Ecuador / Latinoamérica • Exportación Global</span></span>
+        <span><i class="fa-solid fa-shield-halved"></i> <span data-i18n="topbar_quality">100% Calidad de Exportación Certificada</span></span>
+      </div>
+      <div class="top-bar-right">
+        <a href="mailto:info@globalmarket-gm.com" class="top-link"><i class="fa-regular fa-envelope"></i> info@globalmarket-gm.com</a>
+        <div class="lang-switch-btn" id="langSwitch" title="Cambiar idioma / Switch language">
+          <span id="currentLangLabel">🇪🇸 ES</span> <i class="fa-solid fa-chevron-down"></i>
+          <div class="lang-dropdown" id="langDropdown">
+            <button type="button" class="lang-option active" data-lang="es">🇪🇸 Español</button>
+            <button type="button" class="lang-option" data-lang="en">🇺🇸 English</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Navigation Header -->
+  <header class="main-header" id="mainHeader">
+    <div class="container nav-container">
+      <a href="#inicio" class="brand-logo" aria-label="Global Market GM Inicio">
+        <img src="assets/images/logo.png" alt="Global Market GM Logo" class="brand-img">
+        <div class="brand-text">
+          <span class="brand-name">GLOBAL MARKET <span class="brand-highlight">GM</span></span>
+          <span class="brand-tagline" data-i18n="brand_sub">GLOBAL FRESH FRUIT EXPORTER</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="nav-menu" id="navMenu">
+        <a href="#inicio" class="nav-link active" data-i18n="nav_home">Inicio</a>
+        <a href="#nosotros" class="nav-link" data-i18n="nav_about">Nosotros</a>
+        <a href="#productos" class="nav-link" data-i18n="nav_products">Productos</a>
+        <a href="#certificaciones" class="nav-link" data-i18n="nav_cert">Certificaciones</a>
+        <a href="#logistica" class="nav-link" data-i18n="nav_logistics">Logística</a>
+        <a href="#contacto" class="nav-link" data-i18n="nav_contact">Contacto</a>
+      </nav>
+
+      <!-- Header CTAs -->
+      <div class="header-actions">
+        <a href="#cotizador" class="btn btn-primary btn-sm btn-quote">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <span data-i18n="btn_request_quote">Cotizar Frutas</span>
+        </a>
+        <a href="https://wa.me/593999999999?text=Hola%20Global%20Market%20GM,%20deseo%20solicitar%20información%20y%20cotización%20de%20frutas%20de%20exportación." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp-header" aria-label="WhatsApp">
+          <i class="fa-brands fa-whatsapp"></i>
+        </a>
+        <button type="button" class="mobile-toggle" id="mobileToggle" aria-label="Abrir menú">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Menu -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-head">
+      <img src="assets/images/logo.png" alt="Global Market GM Logo" style="height: 38px;">
+      <button type="button" class="mobile-close" id="mobileClose" aria-label="Cerrar menú">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="mobile-drawer-links">
+      <a href="#inicio" class="mobile-link" data-i18n="nav_home">Inicio</a>
+      <a href="#nosotros" class="mobile-link" data-i18n="nav_about">Nosotros</a>
+      <a href="#productos" class="mobile-link" data-i18n="nav_products">Productos</a>
+      <a href="#certificaciones" class="mobile-link" data-i18n="nav_cert">Certificaciones</a>
+      <a href="#logistica" class="mobile-link" data-i18n="nav_logistics">Logística</a>
+      <a href="#contacto" class="mobile-link" data-i18n="nav_contact">Contacto</a>
+      <a href="#cotizador" class="btn btn-primary" style="margin-top: 1.5rem; justify-content: center;" data-i18n="btn_request_quote">Cotizar Frutas</a>
+    </div>
+  </div>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero-section" id="inicio">
+      <div class="hero-bg-overlay"></div>
+      <div class="container hero-container">
+        <div class="hero-content">
+          <div class="hero-badge animate-fade-in">
+            <i class="fa-solid fa-seedling"></i>
+            <span data-i18n="hero_badge">Frutas Tropicales Premium de Exportación</span>
+          </div>
+          <h1 class="hero-title animate-fade-in" data-i18n="hero_title">
+            Llevamos la Frescura y Sabor del Trópico a los Mercados del Mundo
+          </h1>
+          <p class="hero-subtitle animate-fade-in" data-i18n="hero_desc">
+            Productores y exportadores líderes de <strong>Banano Cavendish</strong>, <strong>Mango</strong>, <strong>Pitahaya Roja (Red Dragon)</strong> y <strong>Pitahaya Amarilla de Palora</strong>. Estrictos estándares fitosanitarios, trazabilidad completa y cadena de frío ininterrumpida.
+          </p>
+          <div class="hero-buttons animate-fade-in">
+            <a href="#productos" class="btn btn-primary btn-lg">
+              <span data-i18n="hero_btn_explore">Explorar Catálogo</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a href="#cotizador" class="btn btn-glass btn-lg">
+              <i class="fa-solid fa-calculator"></i>
+              <span data-i18n="hero_btn_quote">Cotizador B2B</span>
+            </a>
+            <a href="https://wa.me/593999999999?text=Hola%20Global%20Market%20GM,%20deseo%20cotizar%20un%20contenedor%20de%20frutas." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-lg">
+              <i class="fa-brands fa-whatsapp"></i>
+              <span data-i18n="hero_btn_whatsapp">WhatsApp Directo</span>
+            </a>
+          </div>
+
+          <!-- Hero Metrics / Trust Counters -->
+          <div class="hero-stats-grid animate-fade-in">
+            <div class="stat-card">
+              <span class="stat-num">+15</span>
+              <span class="stat-lbl" data-i18n="stat_countries">Países Destino</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">100%</span>
+              <span class="stat-lbl" data-i18n="stat_coldchain">Cadena de Frío Controlada</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">+500</span>
+              <span class="stat-lbl" data-i18n="stat_hectares">Hectáreas de Cultivo</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">GlobalGAP</span>
+              <span class="stat-lbl" data-i18n="stat_cert">Estándar Internacional</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section class="section-padding about-section" id="nosotros">
+      <div class="container">
+        <div class="grid-2-cols align-center">
+          <div class="about-visuals">
+            <div class="image-wrapper-card">
+              <img src="assets/images/hero-banner.jpg" alt="Plantación y Cosecha Global Market GM" class="about-img-main">
+              <div class="about-floating-badge">
+                <div class="badge-icon"><i class="fa-solid fa-leaf"></i></div>
+                <div>
+                  <h4 data-i18n="about_badge_title">Agricultura Sostenible</h4>
+                  <p data-i18n="about_badge_sub">Prácticas orgánicas y eco-amigables</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="about-text-content">
+            <div class="section-tag" data-i18n="about_tag">Quiénes Somos</div>
+            <h2 class="section-title" data-i18n="about_title">Compromiso con la Excelencia Agrícola y la Frescura Internacional</h2>
+            <p class="section-desc" data-i18n="about_p1">
+              En <strong>Global Market GM</strong> somos apasionados por cultivar, seleccionar y exportar lo mejor del agro tropical hacia compradores mayoristas, supermercados e importadores en Estados Unidos, Europa, Asia y Medio Oriente.
+            </p>
+            <p class="section-desc" data-i18n="about_p2">
+              Nuestras fincas aliadas y propias en los valles más privilegiados de Ecuador garantizan un fruto con nutrientes excepcionales, dulzura natural (grados Brix óptimos) y una vida útil prolongada en anaquel gracias a rigurosos procesos de postcosecha.
+            </p>
+            <div class="about-features-list">
+              <div class="about-feature-item">
+                <div class="feature-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div>
+                  <h4 data-i18n="about_feat1_title">Trazabilidad Total</h4>
+                  <p data-i18n="about_feat1_desc">Desde el árbol y lote de cosecha hasta el puerto de desembarque en destino.</p>
+                </div>
+              </div>
+              <div class="about-feature-item">
+                <div class="feature-icon"><i class="fa-solid fa-snowflake"></i></div>
+                <div>
+                  <h4 data-i18n="about_feat2_title">Monitoreo de Temperatura 24/7</h4>
+                  <p data-i18n="about_feat2_desc">Contenedores Reefer con atmósfera controlada para preservar firmeza y frescura.</p>
+                </div>
+              </div>
+              <div class="about-feature-item">
+                <div class="feature-icon"><i class="fa-solid fa-handshake-angle"></i></div>
+                <div>
+                  <h4 data-i18n="about_feat3_title">Trato Justo y Alianzas a Largo Plazo</h4>
+                  <p data-i18n="about_feat3_desc">Relaciones transparentes, contratos de volumen estable y entregas puntuales.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTS CATALOG SECTION -->
+    <section class="section-padding products-section bg-light" id="productos">
+      <div class="container">
+        <div class="section-header text-center">
+          <div class="section-tag" data-i18n="prod_tag">Catálogo de Exportación</div>
+          <h2 class="section-title" data-i18n="prod_title">Nuestras Frutas Tropicales de Clase Mundial</h2>
+          <p class="section-subtitle" data-i18n="prod_subtitle">
+            Seleccionadas a mano bajo los más rigurosos estándares de peso, calibre, color y maduración.
+          </p>
+        </div>
+
+        <div class="products-grid">
+          <!-- PRODUCT 1: BANANO -->
+          <article class="product-card" id="card-banano">
+            <div class="product-img-box">
+              <img src="assets/images/banano.jpg" alt="Banano Cavendish de Exportación" class="product-img" loading="lazy">
+              <span class="product-badge badge-green" data-i18n="badge_all_year">Todo el Año</span>
+            </div>
+            <div class="product-body">
+              <div class="product-origin"><i class="fa-solid fa-earth-americas"></i> <span data-i18n="origin_ecuador">Origen: Ecuador</span></div>
+              <h3 class="product-name" data-i18n="banano_name">Banano Cavendish Premium</h3>
+              <p class="product-summary" data-i18n="banano_desc">
+                Reconocido mundialmente por su sabor inigualable, textura suave y excelente conservación. Cultivado en suelos volcánicos de alta fertilidad.
+              </p>
+              <div class="product-specs-mini">
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_grade">Grado:</span>
+                  <span class="spec-val">Premium 1ra Calidad</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_caliber">Calibre:</span>
+                  <span class="spec-val">39 - 46 mm</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_packaging">Empaque:</span>
+                  <span class="spec-val">Cajas 18.14 kg / 19.43 kg (40 lb)</span>
+                </div>
+              </div>
+              <div class="product-actions">
+                <button type="button" class="btn btn-outline-primary btn-sm btn-open-modal" data-product="banano">
+                  <i class="fa-solid fa-circle-info"></i> <span data-i18n="btn_specs">Ficha Técnica</span>
+                </button>
+                <a href="#cotizador" class="btn btn-primary btn-sm btn-select-product" data-fruit="Banano Cavendish">
+                  <i class="fa-solid fa-cart-plus"></i> <span data-i18n="btn_quote_item">Cotizar</span>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- PRODUCT 2: MANGO -->
+          <article class="product-card" id="card-mango">
+            <div class="product-img-box">
+              <img src="assets/images/mango.jpg" alt="Mango de Exportación Tommy Atkins y Kent" class="product-img" loading="lazy">
+              <span class="product-badge badge-amber" data-i18n="badge_season_mango">Octubre - Febrero</span>
+            </div>
+            <div class="product-body">
+              <div class="product-origin"><i class="fa-solid fa-earth-americas"></i> <span data-i18n="origin_ecuador">Origen: Ecuador / Guayas</span></div>
+              <h3 class="product-name" data-i18n="mango_name">Mango de Exportación (Tommy & Kent)</h3>
+              <p class="product-summary" data-i18n="mango_desc">
+                Mangos jugosos, de coloración vibrante roja/amarilla, aroma dulce y pulpa firme sin fibra. Con tratamiento hidrotérmico certificado USDA-APHIS.
+              </p>
+              <div class="product-specs-mini">
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_varieties">Variedades:</span>
+                  <span class="spec-val">Tommy Atkins, Kent, Keitt, Ataulfo</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_calibers">Calibres:</span>
+                  <span class="spec-val">6, 7, 8, 9, 10, 12, 14</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_brix">Dulzura:</span>
+                  <span class="spec-val">Brix 12° - 15°</span>
+                </div>
+              </div>
+              <div class="product-actions">
+                <button type="button" class="btn btn-outline-primary btn-sm btn-open-modal" data-product="mango">
+                  <i class="fa-solid fa-circle-info"></i> <span data-i18n="btn_specs">Ficha Técnica</span>
+                </button>
+                <a href="#cotizador" class="btn btn-primary btn-sm btn-select-product" data-fruit="Mango Tommy/Kent">
+                  <i class="fa-solid fa-cart-plus"></i> <span data-i18n="btn_quote_item">Cotizar</span>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- PRODUCT 3: PITAHAYA RED DRAGON -->
+          <article class="product-card" id="card-pitahaya-red">
+            <div class="product-img-box">
+              <img src="assets/images/pitahaya-roja.jpg" alt="Pitahaya Roja Red Dragon Fruit" class="product-img" loading="lazy">
+              <span class="product-badge badge-rose" data-i18n="badge_high_demand">Superfruta Exótica</span>
+            </div>
+            <div class="product-body">
+              <div class="product-origin"><i class="fa-solid fa-earth-americas"></i> <span data-i18n="origin_ecuador_costa">Origen: Costa Ecuatoriana</span></div>
+              <h3 class="product-name" data-i18n="pitared_name">Pitahaya Roja (Red Dragon Fruit)</h3>
+              <p class="product-summary" data-i18n="pitared_desc">
+                Cáscara fucsia brillante con pulpa púrpura/roja intensa llena de antioxidantes. Excelente vida comercial y gran atractivo visual para el canal gourmet y retail.
+              </p>
+              <div class="product-specs-mini">
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_variety">Especie:</span>
+                  <span class="spec-val">Hylocereus monacanthus</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_calibers">Calibres:</span>
+                  <span class="spec-val">6, 7, 8, 9, 10 (350g - 650g)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_packaging">Empaque:</span>
+                  <span class="spec-val">Cajas 4.0 kg / 4.5 kg neto</span>
+                </div>
+              </div>
+              <div class="product-actions">
+                <button type="button" class="btn btn-outline-primary btn-sm btn-open-modal" data-product="pitahaya_roja">
+                  <i class="fa-solid fa-circle-info"></i> <span data-i18n="btn_specs">Ficha Técnica</span>
+                </button>
+                <a href="#cotizador" class="btn btn-primary btn-sm btn-select-product" data-fruit="Pitahaya Roja">
+                  <i class="fa-solid fa-cart-plus"></i> <span data-i18n="btn_quote_item">Cotizar</span>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- PRODUCT 4: PITAHAYA YELLOW DRAGON -->
+          <article class="product-card" id="card-pitahaya-yellow">
+            <div class="product-img-box">
+              <img src="assets/images/pitahaya-amarilla.jpg" alt="Pitahaya Amarilla Yellow Dragon de Palora" class="product-img" loading="lazy">
+              <span class="product-badge badge-gold" data-i18n="badge_sweetest">La Más Dulce (18° Brix)</span>
+            </div>
+            <div class="product-body">
+              <div class="product-origin"><i class="fa-solid fa-earth-americas"></i> <span data-i18n="origin_palora">Origen: Palora / Amazonía</span></div>
+              <h3 class="product-name" data-i18n="pitayellow_name">Pitahaya Amarilla (Yellow Dragon)</h3>
+              <p class="product-summary" data-i18n="pitayellow_desc">
+                La famosa fruta dorada de Palora. Pulpa translúcida crujiente, dulzura insuperable y propiedades digestivas. Altísima demanda en EE.UU., Europa y Asia.
+              </p>
+              <div class="product-specs-mini">
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_variety">Especie:</span>
+                  <span class="spec-val">Selenicereus megalanthus</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_brix">Grados Brix:</span>
+                  <span class="spec-val">16° - 19° (Dulzura Superior)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label" data-i18n="spec_transport">Transporte:</span>
+                  <span class="spec-val">Aéreo y Marítimo Reefer</span>
+                </div>
+              </div>
+              <div class="product-actions">
+                <button type="button" class="btn btn-outline-primary btn-sm btn-open-modal" data-product="pitahaya_amarilla">
+                  <i class="fa-solid fa-circle-info"></i> <span data-i18n="btn_specs">Ficha Técnica</span>
+                </button>
+                <a href="#cotizador" class="btn btn-primary btn-sm btn-select-product" data-fruit="Pitahaya Amarilla">
+                  <i class="fa-solid fa-cart-plus"></i> <span data-i18n="btn_quote_item">Cotizar</span>
+                </a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUALITY CERTIFICATIONS SECTION -->
+    <section class="section-padding cert-section" id="certificaciones">
+      <div class="container">
+        <div class="section-header text-center">
+          <div class="section-tag" data-i18n="cert_tag">Garantía Internacional</div>
+          <h2 class="section-title text-white" data-i18n="cert_title">Certificaciones de Calidad y Fitosanidad</h2>
+          <p class="section-subtitle text-white-muted" data-i18n="cert_subtitle">
+            Cumplimos con las regulaciones y auditorías internacionales más estrictas para asegurar inocuidad alimentaria, bienestar laboral y respeto ambiental.
+          </p>
+        </div>
+
+        <div class="cert-grid">
+          <div class="cert-card">
+            <div class="cert-icon"><i class="fa-solid fa-award"></i></div>
+            <h3 class="cert-title">GLOBALG.A.P.</h3>
+            <p class="cert-desc" data-i18n="cert_globalgap">Buenas Prácticas Agrícolas mundiales que garantizan la inocuidad alimentaria y la sostenibilidad del cultivo.</p>
+          </div>
+
+          <div class="cert-card">
+            <div class="cert-icon"><i class="fa-solid fa-people-group"></i></div>
+            <h3 class="cert-title">GRASP</h3>
+            <p class="cert-desc" data-i18n="cert_grasp">Evaluación de riesgos en las prácticas sociales de los trabajadores, salud y seguridad laboral en el campo.</p>
+          </div>
+
+          <div class="cert-card">
+            <div class="cert-icon"><i class="fa-solid fa-frog"></i></div>
+            <h3 class="cert-title">Rainforest Alliance</h3>
+            <p class="cert-desc" data-i18n="cert_rainforest">Conservación de la biodiversidad, protección de fuentes de agua y manejo responsable del ecosistema.</p>
+          </div>
+
+          <div class="cert-card">
+            <div class="cert-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <h3 class="cert-title">BASC & Fitosanidad</h3>
+            <p class="cert-desc" data-i18n="cert_basc">Cadena logística segura y libre de ilícitos, avalada por Agrocalidad y agencias fitosanitarias de destino.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGISTICS & COLD CHAIN SECTION -->
+    <section class="section-padding logistics-section" id="logistica">
+      <div class="container">
+        <div class="grid-2-cols align-center">
+          <div class="logistics-text">
+            <div class="section-tag" data-i18n="logistics_tag">Logística de Exportación</div>
+            <h2 class="section-title" data-i18n="logistics_title">Cadena de Frío Avanzada y Conectividad Global</h2>
+            <p class="section-desc" data-i18n="logistics_p1">
+              El secreto para que nuestras frutas lleguen con el mismo brillo, aroma y firmeza que tenían en la planta es nuestra <strong>gestión milimétrica de la cadena de frío</strong>.
+            </p>
+            
+            <div class="logistics-points">
+              <div class="log-point">
+                <div class="log-point-num">01</div>
+                <div>
+                  <h4 data-i18n="log_p1_title">Pre-enfriamiento Rápido en Planta</h4>
+                  <p data-i18n="log_p1_desc">Reducción inmediata del calor de campo tras la cosecha para detener la senescencia.</p>
+                </div>
+              </div>
+              <div class="log-point">
+                <div class="log-point-num">02</div>
+                <div>
+                  <h4 data-i18n="log_p2_title">Contenedores Reefer con Atmósfera Controlada</h4>
+                  <p data-i18n="log_p2_desc">Regulación precisa de O2 y CO2 para extender la vida en tránsito marítimo hacia Asia y Europa.</p>
+                </div>
+              </div>
+              <div class="log-point">
+                <div class="log-point-num">03</div>
+                <div>
+                  <h4 data-i18n="log_p3_title">Despachos Marítimos y Aéreos Directos</h4>
+                  <p data-i18n="log_p3_desc">Operamos desde los puertos de Guayaquil / Posorja y aeropuertos internacionales de Quito / Guayaquil.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="logistics-media">
+            <div class="logistics-image-card">
+              <img src="assets/images/logistica.jpg" alt="Contenedores Refrigerados y Barco Portacontenedores Global Market GM" class="logistics-img">
+              <div class="logistics-overlay-box">
+                <div class="logistics-overlay-title"><i class="fa-solid fa-ship"></i> <span data-i18n="log_shipping_routes">Rutas Principales</span></div>
+                <div class="routes-tags">
+                  <span class="route-tag">🇺🇸 EE.UU. (Miami, Filadelfia, LA)</span>
+                  <span class="route-tag">🇪🇺 Europa (Rotterdam, Hamburgo, España)</span>
+                  <span class="route-tag">🇨🇳 Asia (Shanghái, Hong Kong, Tokio)</span>
+                  <span class="route-tag">🇦🇪 Medio Oriente (Dubái)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- B2B QUOTATION / RFQ CALCULATOR SECTION -->
+    <section class="section-padding quote-section bg-light" id="cotizador">
+      <div class="container">
+        <div class="section-header text-center">
+          <div class="section-tag" data-i18n="quote_tag">Cotización Directa</div>
+          <h2 class="section-title" data-i18n="quote_title">Solicita tu Cotización de Contenedores o Carga Aérea</h2>
+          <p class="section-subtitle" data-i18n="quote_subtitle">
+            Ingresa los detalles de tu requerimiento y nuestro equipo comercial te responderá en menos de 24 horas con disponibilidad, especificaciones y precios FOB / CIF.
+          </p>
+        </div>
+
+        <div class="quote-card-container">
+          <form class="quote-form" id="quoteForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="clientName" class="form-label"><i class="fa-solid fa-user"></i> <span data-i18n="form_name">Nombre Completo / Contacto</span> *</label>
+                <input type="text" id="clientName" class="form-input" placeholder="Ej: John Miller" required>
+              </div>
+
+              <div class="form-group">
+                <label for="companyName" class="form-label"><i class="fa-solid fa-building"></i> <span data-i18n="form_company">Empresa / Importadora</span> *</label>
+                <input type="text" id="companyName" class="form-input" placeholder="Ej: Global Fruit Imports LLC" required>
+              </div>
+
+              <div class="form-group">
+                <label for="clientEmail" class="form-label"><i class="fa-solid fa-envelope"></i> <span data-i18n="form_email">Correo Corporativo</span> *</label>
+                <input type="email" id="clientEmail" class="form-input" placeholder="Ej: procurement@company.com" required>
+              </div>
+
+              <div class="form-group">
+                <label for="clientPhone" class="form-label"><i class="fa-brands fa-whatsapp"></i> <span data-i18n="form_phone">Teléfono / WhatsApp</span> *</label>
+                <input type="tel" id="clientPhone" class="form-input" placeholder="+1 (555) 019-2834" required>
+              </div>
+
+              <div class="form-group">
+                <label for="fruitSelect" class="form-label"><i class="fa-solid fa-apple-whole"></i> <span data-i18n="form_fruit">Fruta de Interés</span> *</label>
+                <select id="fruitSelect" class="form-select" required>
+                  <option value="" disabled selected data-i18n="form_fruit_placeholder">Seleccione una fruta...</option>
+                  <option value="Banano Cavendish">🍌 Banano Cavendish (Cajas 40 lb / 18.14 kg)</option>
+                  <option value="Mango Tommy/Kent">🥭 Mango Tommy Atkins / Kent</option>
+                  <option value="Pitahaya Roja">🌺 Pitahaya Roja (Red Dragon Fruit)</option>
+                  <option value="Pitahaya Amarilla">🟡 Pitahaya Amarilla (Yellow Dragon Palora)</option>
+                  <option value="Mixto / Varios">📦 Carga Mixta / Varios Productos</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="volumeSelect" class="form-label"><i class="fa-solid fa-box-open"></i> <span data-i18n="form_volume">Volumen / Frecuencia</span> *</label>
+                <select id="volumeSelect" class="form-select" required>
+                  <option value="1 Contenedor FCL (Prueba / Spot)">1 Contenedor FCL (Prueba / Spot)</option>
+                  <option value="2 a 4 Contenedores / Mes">2 a 4 Contenedores / Mes</option>
+                  <option value="+5 Contenedores / Mes (Programa Anual)">+5 Contenedores / Mes (Programa Anual)</option>
+                  <option value="Carga Aérea (Pallets)">Carga Aérea (Pallets / Semanal)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="destCountry" class="form-label"><i class="fa-solid fa-globe"></i> <span data-i18n="form_dest_country">País y Puerto de Destino</span> *</label>
+                <input type="text" id="destCountry" class="form-input" placeholder="Ej: EE.UU. (Port of Miami) / Rotterdam" required>
+              </div>
+
+              <div class="form-group">
+                <label for="incotermSelect" class="form-label"><i class="fa-solid fa-handshake"></i> <span data-i18n="form_incoterm">Término Incoterm Deseado</span></label>
+                <select id="incotermSelect" class="form-select">
+                  <option value="FOB (Puerto Guayaquil)">FOB (Puerto Guayaquil / Posorja)</option>
+                  <option value="CIF (Costo, Seguro y Flete a Destino)">CIF (Costo, Seguro y Flete a Destino)</option>
+                  <option value="CFR (Costo y Flete)">CFR (Costo y Flete)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+              <label for="comments" class="form-label"><i class="fa-solid fa-comment-dots"></i> <span data-i18n="form_notes">Especificaciones Adicionales / Requerimientos</span></label>
+              <textarea id="comments" rows="3" class="form-textarea" placeholder="Indica calibres específicos, tipo de empaque o fechas requeridas de despacho..."></textarea>
+            </div>
+
+            <div class="form-submit-row">
+              <button type="submit" class="btn btn-primary btn-lg" id="btnSubmitForm">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span data-i18n="form_btn_send">Enviar Solicitud de Cotización</span>
+              </button>
+              <button type="button" class="btn btn-whatsapp btn-lg" id="btnSendWhatsapp">
+                <i class="fa-brands fa-whatsapp"></i>
+                <span data-i18n="form_btn_wa">Cotizar al Instante por WhatsApp</span>
+              </button>
+            </div>
+
+            <div class="form-success-alert" id="formSuccessAlert" style="display: none;">
+              <i class="fa-solid fa-circle-check"></i>
+              <div>
+                <strong data-i18n="alert_success_title">¡Solicitud recibida con éxito!</strong>
+                <p data-i18n="alert_success_desc">Nuestro equipo de comercio exterior se pondrá en contacto contigo de inmediato.</p>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT & LOCATIONS SECTION -->
+    <section class="section-padding contact-section" id="contacto">
+      <div class="container">
+        <div class="grid-2-cols align-center">
+          <div class="contact-info-panel">
+            <div class="section-tag" data-i18n="contact_tag">Contacto Global</div>
+            <h2 class="section-title text-white" data-i18n="contact_title">Conectemos para tu Próximo Despacho</h2>
+            <p class="section-desc text-white-muted" data-i18n="contact_desc">
+              Estamos listos para ser tu socio estratégico en el abastecimiento continuo de frutas tropicales de alta calidad.
+            </p>
+
+            <div class="contact-cards-list">
+              <div class="contact-item-card">
+                <div class="contact-item-icon"><i class="fa-solid fa-location-dot"></i></div>
+                <div>
+                  <h4 data-i18n="contact_loc_title">Oficinas y Plantas de Empaque</h4>
+                  <p>Guayaquil & Palora, Ecuador • Latinoamérica</p>
+                </div>
+              </div>
+
+              <div class="contact-item-card">
+                <div class="contact-item-icon"><i class="fa-solid fa-envelope"></i></div>
+                <div>
+                  <h4 data-i18n="contact_email_title">Correos de Comercio Exterior</h4>
+                  <p><a href="mailto:info@globalmarket-gm.com" class="text-link">info@globalmarket-gm.com</a> | <a href="mailto:exports@globalmarket-gm.com" class="text-link">exports@globalmarket-gm.com</a></p>
+                </div>
+              </div>
+
+              <div class="contact-item-card">
+                <div class="contact-item-icon"><i class="fa-brands fa-whatsapp"></i></div>
+                <div>
+                  <h4 data-i18n="contact_phone_title">Atención Telefónica y WhatsApp 24/7</h4>
+                  <p>Comercial Internacional: +593 99 999 9999</p>
+                </div>
+              </div>
+
+              <div class="contact-item-card">
+                <div class="contact-item-icon"><i class="fa-solid fa-clock"></i></div>
+                <div>
+                  <h4 data-i18n="contact_hours_title">Horario de Operación</h4>
+                  <p>Lunes a Viernes: 08:00 - 18:00 (GMT-5) • Despachos 24/7</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="contact-map-card">
+            <div class="map-placeholder-box">
+              <img src="assets/images/logo.png" alt="Global Market GM Emblem" style="width: 80px; margin-bottom: 1rem; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));">
+              <h3>GLOBAL MARKET GM</h3>
+              <p data-i18n="map_text">Despachos desde los principales puertos del Pacífico hacia el mundo</p>
+              <div class="ports-list">
+                <span>🚢 DP World Posorja</span>
+                <span>🚢 Contecon Guayaquil</span>
+                <span>✈️ Aeropuerto Mariscal Sucre (UIO)</span>
+                <span>✈️ Aeropuerto José Joaquín de Olmedo (GYE)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- PRODUCT TECHNICAL SPECS MODAL -->
+  <div class="modal-backdrop" id="specsModal">
+    <div class="modal-card">
+      <button type="button" class="modal-close" id="modalClose" aria-label="Cerrar modal"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header">
+        <h3 id="modalProductTitle">Ficha Técnica de Exportación</h3>
+        <span class="badge-pill" id="modalProductBadge">Calidad Grado A</span>
+      </div>
+      <div class="modal-body" id="modalProductContent">
+        <!-- Dynamic Content injected via JS -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" id="modalBtnClose" data-i18n="modal_close">Cerrar</button>
+        <a href="#cotizador" class="btn btn-primary" id="modalBtnQuote">
+          <i class="fa-solid fa-calculator"></i> <span data-i18n="btn_quote_this">Cotizar este Producto</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING WHATSAPP BUTTON -->
+  <a href="https://wa.me/593999999999?text=Hola%20Global%20Market%20GM,%20deseo%20solicitar%20información%20y%20cotización%20de%20frutas%20para%20exportación." target="_blank" rel="noopener noreferrer" class="floating-wa" aria-label="Contactar por WhatsApp">
+    <i class="fa-brands fa-whatsapp"></i>
+    <span class="wa-tooltip" data-i18n="wa_tooltip">¡Chatea con un asesor de exportación!</span>
+  </a>
+
+  <!-- FOOTER -->
+  <footer class="main-footer">
+    <div class="container footer-container">
+      <div class="footer-col brand-col">
+        <div class="footer-logo">
+          <img src="assets/images/logo.png" alt="Global Market GM Logo" class="footer-logo-img">
+          <span class="footer-brand-title">GLOBAL MARKET <span class="text-accent">GM</span></span>
+        </div>
+        <p class="footer-desc" data-i18n="footer_desc">
+          Exportación de frutas tropicales de alta gama hacia América del Norte, Europa, Asia y Medio Oriente. Frescura, trazabilidad y compromiso con la calidad.
+        </p>
+        <div class="footer-socials">
+          <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="https://wa.me/593999999999" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading" data-i18n="footer_fruits">Nuestras Frutas</h4>
+        <ul class="footer-links">
+          <li><a href="#card-banano" data-i18n="banano_name">Banano Cavendish Premium</a></li>
+          <li><a href="#card-mango" data-i18n="mango_name">Mango Tommy Atkins / Kent</a></li>
+          <li><a href="#card-pitahaya-red" data-i18n="pitared_name">Pitahaya Roja (Red Dragon)</a></li>
+          <li><a href="#card-pitahaya-yellow" data-i18n="pitayellow_name">Pitahaya Amarilla de Palora</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading" data-i18n="footer_nav">Navegación</h4>
+        <ul class="footer-links">
+          <li><a href="#inicio" data-i18n="nav_home">Inicio</a></li>
+          <li><a href="#nosotros" data-i18n="nav_about">Quiénes Somos</a></li>
+          <li><a href="#certificaciones" data-i18n="nav_cert">Certificaciones de Calidad</a></li>
+          <li><a href="#logistica" data-i18n="nav_logistics">Logística y Cadena de Frío</a></li>
+          <li><a href="#cotizador" data-i18n="nav_quote">Cotizador B2B</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading" data-i18n="footer_certs">Estándares</h4>
+        <div class="footer-badges-list">
+          <span class="f-badge">GlobalG.A.P.</span>
+          <span class="f-badge">GRASP</span>
+          <span class="f-badge">Rainforest</span>
+          <span class="f-badge">BASC</span>
+          <span class="f-badge">USDA Fitosanitario</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <p>&copy; <span id="year">2026</span> Global Market GM. <span data-i18n="footer_rights">Todos los derechos reservados.</span></p>
+        <p class="footer-made-with" data-i18n="footer_global">Exportando frescura de Ecuador para el mundo 🌍</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript Script -->
+  <script src="app.js"></script>
+</body>
+</html>
