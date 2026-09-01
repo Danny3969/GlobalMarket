@@ -48,6 +48,17 @@ function save_menu_items($data) {
     return file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 }
 
+function get_nav_i18n_key($url) {
+    if ($url === '#inicio' || $url === 'index.html' || $url === 'index.html#inicio') return 'nav_home';
+    if (strpos($url, '#nosotros') !== false) return 'nav_about';
+    if (strpos($url, '#productos') !== false) return 'nav_products';
+    if (strpos($url, '#certificaciones') !== false) return 'nav_cert';
+    if (strpos($url, '#logistica') !== false) return 'nav_logistics';
+    if (strpos($url, '#contacto') !== false) return 'nav_contact';
+    if (strpos($url, '#cotizador') !== false) return 'btn_request_quote';
+    return '';
+}
+
 function render_menu_nav_html($menuItems, $isProductPage = false) {
     $html = '';
     foreach ($menuItems as $item) {
@@ -59,9 +70,12 @@ function render_menu_nav_html($menuItems, $isProductPage = false) {
             $url = 'index.html' . $url;
         }
 
+        $i18n = get_nav_i18n_key($url);
+        $i18nAttr = $i18n ? " data-i18n=\"{$i18n}\"" : "";
+
         if (!empty($item['has_submenu']) && !empty($item['submenu'])) {
             $html .= "        <div class=\"nav-dropdown-wrapper\">\n";
-            $html .= "          <a href=\"{$url}\" class=\"nav-link\">{$item['label']} <i class=\"fa-solid fa-chevron-down\" style=\"font-size: 0.7rem; margin-left: 0.25rem;\"></i></a>\n";
+            $html .= "          <a href=\"{$url}\" class=\"nav-link\"{$i18nAttr}>{$item['label']} <i class=\"fa-solid fa-chevron-down\" style=\"font-size: 0.7rem; margin-left: 0.25rem;\"></i></a>\n";
             $html .= "          <div class=\"nav-dropdown-menu\">\n";
             foreach ($item['submenu'] as $sub) {
                 if (isset($sub['visible']) && $sub['visible'] === false) continue;
@@ -70,7 +84,7 @@ function render_menu_nav_html($menuItems, $isProductPage = false) {
             $html .= "          </div>\n";
             $html .= "        </div>\n";
         } else {
-            $html .= "        <a href=\"{$url}\" class=\"nav-link\">{$item['label']}</a>\n";
+            $html .= "        <a href=\"{$url}\" class=\"nav-link\"{$i18nAttr}>{$item['label']}</a>\n";
         }
     }
     return $html;
@@ -178,13 +192,13 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
         <a href="mailto:{$email}"><i class="fa-solid fa-envelope"></i> {$email}</a>
         <span class="top-bar-badge"><i class="fa-solid fa-shield-halved"></i> {$certsBadge}</span>
       </div>
-      <div class="top-bar-lang">
-        <a href="drive/index.php" class="top-bar-portal-btn" title="Portal Drive Privado & Intranet" style="background: rgba(217, 119, 6, 0.22); border: 1px solid rgba(251, 191, 36, 0.45); color: #fbbf24; padding: 0.2rem 0.65rem; border-radius: 99px; text-decoration: none; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.4rem;"><i class="fa-solid fa-lock"></i> <span>Drive</span></a>
-        <a href="https://globalmarket-gm.com/webmail" target="_blank" class="top-bar-webmail-btn" title="Webmail de Correos Corporativos" style="background: rgba(59, 130, 246, 0.18); border: 1px solid rgba(96, 165, 250, 0.4); color: #93c5fd; padding: 0.2rem 0.65rem; border-radius: 99px; text-decoration: none; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.5rem;"><i class="fa-solid fa-envelope"></i> <span>Webmail</span></a>
-        <span class="lang-divider">|</span>
-        <button type="button" class="lang-btn active" data-lang="es">🇪🇸 ES</button>
-        <span class="lang-divider">|</span>
-        <button type="button" class="lang-btn" data-lang="en">🇺🇸 EN</button>
+      <div class="top-bar-right">
+        <a href="drive/index.php" class="top-bar-portal-btn" title="Portal Drive Privado & Intranet"><i class="fa-solid fa-lock"></i> <span>Drive</span></a>
+        <a href="https://globalmarket-gm.com/webmail" target="_blank" class="top-bar-webmail-btn" title="Webmail de Correos Corporativos"><i class="fa-solid fa-envelope"></i> <span>Webmail</span></a>
+        <div class="lang-switch-group">
+          <button type="button" class="lang-btn active" data-lang="es">🇪🇸 ES</button>
+          <button type="button" class="lang-btn" data-lang="en">🇺🇸 EN</button>
+        </div>
       </div>
     </div>
   </div>
@@ -556,10 +570,10 @@ function rebuild_home_page($home, $products, $settings, $menuItems = null) {
             </div>
             <div class="product-card-actions">
               <a href="{$pFile}" class="btn btn-outline-primary btn-sm btn-block">
-                <i class="fa-solid fa-circle-info"></i> Ver Ficha y Galería
+                <i class="fa-solid fa-circle-info"></i> <span data-i18n="btn_specs">Ver Ficha y Galería</span>
               </a>
               <a href="{$pFile}#cotizador-producto" class="btn btn-primary btn-sm btn-block">
-                <i class="fa-solid fa-file-invoice-dollar"></i> Cotizar
+                <i class="fa-solid fa-file-invoice-dollar"></i> <span data-i18n="btn_quote_item">Cotizar</span>
               </a>
             </div>
           </div>
@@ -695,15 +709,11 @@ HTML;
         <span><i class="fa-solid fa-shield-halved"></i> <span>{$certsBadge}</span></span>
       </div>
       <div class="top-bar-right">
-        <a href="drive/index.php" class="top-bar-portal-btn" title="Portal Drive Privado & Intranet" style="background: rgba(217, 119, 6, 0.22); border: 1px solid rgba(251, 191, 36, 0.45); color: #fbbf24; padding: 0.2rem 0.65rem; border-radius: 99px; text-decoration: none; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-lock"></i> <span>Drive GlobalMarket</span></a>
-        <a href="https://globalmarket-gm.com/webmail" target="_blank" class="top-bar-webmail-btn" title="Webmail de Correos Corporativos" style="background: rgba(59, 130, 246, 0.18); border: 1px solid rgba(96, 165, 250, 0.4); color: #93c5fd; padding: 0.2rem 0.65rem; border-radius: 99px; text-decoration: none; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-envelope"></i> <span>Webmail</span></a>
-        <a href="mailto:{$email}" class="top-link"><i class="fa-regular fa-envelope"></i> {$email}</a>
-        <div class="lang-switch-btn" id="langSwitch" title="Cambiar idioma">
-          <span id="currentLangLabel">🇪🇸 ES</span> <i class="fa-solid fa-chevron-down"></i>
-          <div class="lang-dropdown" id="langDropdown">
-            <button type="button" class="lang-option active" data-lang="es">🇪🇸 Español</button>
-            <button type="button" class="lang-option" data-lang="en">🇺🇸 English</button>
-          </div>
+        <a href="drive/index.php" class="top-bar-portal-btn" title="Portal Drive Privado & Intranet"><i class="fa-solid fa-lock"></i> <span>Drive</span></a>
+        <a href="https://globalmarket-gm.com/webmail" target="_blank" class="top-bar-webmail-btn" title="Webmail de Correos Corporativos"><i class="fa-solid fa-envelope"></i> <span>Webmail</span></a>
+        <div class="lang-switch-group">
+          <button type="button" class="lang-btn active" data-lang="es">🇪🇸 ES</button>
+          <button type="button" class="lang-btn" data-lang="en">🇺🇸 EN</button>
         </div>
       </div>
     </div>

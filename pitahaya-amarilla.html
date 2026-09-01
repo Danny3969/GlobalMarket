@@ -26,13 +26,13 @@
         <a href="mailto:exports@globalmarket-gm.com"><i class="fa-solid fa-envelope"></i> exports@globalmarket-gm.com</a>
         <span class="top-bar-badge"><i class="fa-solid fa-shield-halved"></i> GlobalG.A.P. & BASC Certified</span>
       </div>
-      <div class="top-bar-lang">
-        <a href="drive/index.php" class="top-bar-portal-btn" title="Portal Drive Privado & Intranet" style="background: rgba(217, 119, 6, 0.22); border: 1px solid rgba(251, 191, 36, 0.45); color: #fbbf24; padding: 0.2rem 0.65rem; border-radius: 99px; text-decoration: none; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.4rem;"><i class="fa-solid fa-lock"></i> <span>Drive</span></a>
-        <a href="https://globalmarket-gm.com/webmail" target="_blank" class="top-bar-webmail-btn" title="Webmail de Correos Corporativos" style="background: rgba(59, 130, 246, 0.18); border: 1px solid rgba(96, 165, 250, 0.4); color: #93c5fd; padding: 0.2rem 0.65rem; border-radius: 99px; text-decoration: none; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.5rem;"><i class="fa-solid fa-envelope"></i> <span>Webmail</span></a>
-        <span class="lang-divider">|</span>
-        <button type="button" class="lang-btn active" data-lang="es">🇪🇸 ES</button>
-        <span class="lang-divider">|</span>
-        <button type="button" class="lang-btn" data-lang="en">🇺🇸 EN</button>
+      <div class="top-bar-right">
+        <a href="drive/index.php" class="top-bar-portal-btn" title="Portal Drive Privado & Intranet"><i class="fa-solid fa-lock"></i> <span>Drive</span></a>
+        <a href="https://globalmarket-gm.com/webmail" target="_blank" class="top-bar-webmail-btn" title="Webmail de Correos Corporativos"><i class="fa-solid fa-envelope"></i> <span>Webmail</span></a>
+        <div class="lang-switch-group">
+          <button type="button" class="lang-btn active" data-lang="es">🇪🇸 ES</button>
+          <button type="button" class="lang-btn" data-lang="en">🇺🇸 EN</button>
+        </div>
       </div>
     </div>
   </div>
@@ -45,10 +45,10 @@
       </a>
 
       <nav class="nav-links" id="navLinks">
-        <a href="index.html#inicio" class="nav-link">Inicio</a>
-        <a href="index.html#nosotros" class="nav-link">Quiénes Somos</a>
+        <a href="index.html#inicio" class="nav-link" data-i18n="nav_home">Inicio</a>
+        <a href="index.html#nosotros" class="nav-link" data-i18n="nav_about">Quiénes Somos</a>
         <div class="nav-dropdown-wrapper">
-          <a href="index.html#productos" class="nav-link">Productos <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; margin-left: 0.25rem;"></i></a>
+          <a href="index.html#productos" class="nav-link" data-i18n="nav_products">Productos <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; margin-left: 0.25rem;"></i></a>
           <div class="nav-dropdown-menu">
             <a href="banano.html" class="dropdown-item">Banano Cavendish</a>
             <a href="platano.html" class="dropdown-item">Plátano Verde / Barraganete</a>
@@ -60,8 +60,8 @@
             <a href="mango.html" class="dropdown-item">Mango de Exportación</a>
           </div>
         </div>
-        <a href="index.html#certificaciones" class="nav-link">Certificaciones</a>
-        <a href="index.html#logistica" class="nav-link">Logística</a>
+        <a href="index.html#certificaciones" class="nav-link" data-i18n="nav_cert">Certificaciones</a>
+        <a href="index.html#logistica" class="nav-link" data-i18n="nav_logistics">Logística</a>
       </nav>
 
       <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Abrir Menú">
@@ -71,7 +71,7 @@
   </header>
 
   <!-- PRODUCT HERO HEADER CON IMAGEN -->
-  <section class="product-hero product-hero-pitayellow" style="background-image: linear-gradient(180deg, rgba(6, 21, 15, 0.72) 0%, rgba(6, 21, 15, 0.92) 100%), url('assets/images/pitahaya-amarilla/pitahaya-amarilla-campo-paisaje.jpg?v=1788300552'); background-size: cover; background-position: center;">
+  <section class="product-hero product-hero-pitayellow" style="background-image: linear-gradient(180deg, rgba(6, 21, 15, 0.72) 0%, rgba(6, 21, 15, 0.92) 100%), url('assets/images/pitahaya-amarilla/pitahaya-amarilla-campo-paisaje.jpg?v=1788301085'); background-size: cover; background-position: center;">
     <div class="container">
       <div class="breadcrumbs">
         <a href="index.html">Inicio</a>
@@ -109,7 +109,7 @@
         <!-- LEFT: IMAGEN HD & NUTRICIÓN -->
         <div>
           <div class="detail-gallery-box">
-            <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-mitades-corte-hd.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="detail-main-img">
+            <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-mitades-corte-hd.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="detail-main-img">
             <div style="padding: 1.25rem; background: #FFFFFF; display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <strong style="color: var(--primary-dark); font-size: 1.05rem;"><i class="fa-solid fa-location-dot text-primary"></i> Origen:</strong>
@@ -233,128 +233,128 @@
 
       <div class="gallery-grid" id="galleryGrid">
         <!-- FOTO 1 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-mitades-corte-hd.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-mitades-corte-hd-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-mitades-corte-hd.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-mitades-corte-hd-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 2 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-degustacion-mantel.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-degustacion-mantel-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-degustacion-mantel.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-degustacion-mantel-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 3 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-empaque-caja.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-empaque-caja-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-empaque-caja.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-empaque-caja-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 4 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-cesta-mimbre.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-cesta-mimbre-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-cesta-mimbre.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-cesta-mimbre-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 5 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruto-finca-mano.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruto-finca-mano-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruto-finca-mano.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruto-finca-mano-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 6 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-cosecha-mano.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-cosecha-mano-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-cosecha-mano.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-cosecha-mano-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 7 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-frutos-tallo.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-frutos-tallo-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-frutos-tallo.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-frutos-tallo-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 8 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-macro-dorada.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-macro-dorada-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-macro-dorada.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-macro-dorada-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 9 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-campo-paisaje.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-campo-paisaje-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-campo-paisaje.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-campo-paisaje-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 10 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-jaba-cosecha.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-jaba-cosecha-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-jaba-cosecha.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-jaba-cosecha-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 11 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-espinas-detalle.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-espinas-detalle-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-espinas-detalle.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-espinas-detalle-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 12 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-floracion-abierta.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-floracion-abierta-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-floracion-abierta.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-floracion-abierta-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 13 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-brote-flor.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-brote-flor-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-brote-flor.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-brote-flor-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 14 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruto-espinas-natural.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruto-espinas-natural-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruto-espinas-natural.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruto-espinas-natural-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 15 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-planta-frondosa.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-planta-frondosa-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-planta-frondosa.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-planta-frondosa-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>
         </div>
 
         <!-- FOTO 16 -->
-        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruta-fresca.jpg?v=1788300552">
-          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruta-fresca-sq.jpg?v=1788300552" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruta-fresca.jpg?v=1788301085">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruta-fresca-sq.jpg?v=1788301085" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="gallery-thumb" loading="lazy">
           <div class="gallery-overlay">
             <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
           </div>

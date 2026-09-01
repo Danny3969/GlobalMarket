@@ -334,7 +334,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       if (dict[key]) {
-        el.innerHTML = dict[key];
+        const icon = el.querySelector('i');
+        if (icon) {
+          const iconHtml = icon.outerHTML;
+          if (el.firstElementChild === icon) {
+            el.innerHTML = `${iconHtml} <span>${dict[key]}</span>`;
+          } else {
+            el.innerHTML = `<span>${dict[key]}</span> ${iconHtml}`;
+          }
+        } else {
+          el.innerHTML = dict[key];
+        }
       }
     });
 
