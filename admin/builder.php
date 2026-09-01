@@ -561,18 +561,20 @@ function rebuild_home_page($home, $products, $settings, $menuItems = null) {
             <span class="product-badge badge-green">{$pBadge}</span>
           </div>
           <div class="product-content">
-            <span class="product-tag">{$pScientific}</span>
-            <h3 class="product-title">{$pName}</h3>
-            <p class="product-desc">{$pTagline}</p>
-            <div class="product-meta">
-              <span><i class="fa-solid fa-ruler-combined"></i> {$pCalibers}</span>
-              <span><i class="fa-solid fa-box"></i> {$pPack}</span>
+            <div class="product-info-top">
+              <span class="product-tag">{$pScientific}</span>
+              <h3 class="product-title">{$pName}</h3>
+              <p class="product-desc">{$pTagline}</p>
+              <div class="product-meta">
+                <span><i class="fa-solid fa-ruler-combined"></i> {$pCalibers}</span>
+                <span><i class="fa-solid fa-box"></i> {$pPack}</span>
+              </div>
             </div>
             <div class="product-card-actions">
-              <a href="{$pFile}" class="btn btn-outline-primary btn-sm btn-block">
-                <i class="fa-solid fa-circle-info"></i> <span data-i18n="btn_specs">Ver Ficha y Galería</span>
+              <a href="{$pFile}" class="btn btn-outline-primary btn-sm">
+                <i class="fa-solid fa-circle-info"></i> <span data-i18n="btn_specs">Ficha Técnica</span>
               </a>
-              <a href="{$pFile}#cotizador-producto" class="btn btn-primary btn-sm btn-block">
+              <a href="{$pFile}#cotizador-producto" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-file-invoice-dollar"></i> <span data-i18n="btn_quote_item">Cotizar</span>
               </a>
             </div>
