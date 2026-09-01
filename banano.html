@@ -95,7 +95,7 @@
         <!-- LEFT: IMAGEN HD & NUTRICIÓN -->
         <div>
           <div class="detail-gallery-box">
-            <img src="assets/images/banano.jpg?v=4" alt="Banano Cavendish Premium" class="detail-main-img">
+            <img src="assets/images/banano/banano-caja-exportacion-verde.jpg?v=5" alt="Banano Cavendish Premium" class="detail-main-img">
             <div style="padding: 1.25rem; background: #FFFFFF; display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <strong style="color: var(--primary-dark); font-size: 1.05rem;"><i class="fa-solid fa-location-dot text-primary"></i> Origen:</strong>
@@ -205,6 +205,89 @@
       </div>
     </div>
   </section>
+
+  <!-- SECCIÓN DE GALERÍA DE FOTOS (CUADRÍCULA UNIFORME 1:1) -->
+  <section class="gallery-section" id="galeria">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag">Galería de Imágenes</div>
+        <h2 class="section-title">Banano Cavendish Premium</h2>
+        <p class="section-subtitle">
+          Catálogo visual de exportación. Haz clic sobre cualquier fotografía para verla en alta definición.
+        </p>
+      </div>
+
+      <!-- GRID UNIFORME 1:1 (FOTOGRAFÍAS REALES ORDENADAS) -->
+      <div class="gallery-grid" id="galleryGrid">
+        
+        <!-- FOTO 1 (Caja 22XU de banano verde empacado) -->
+        <div class="gallery-card" data-src="assets/images/banano/banano-caja-exportacion-verde.jpg?v=5">
+          <img src="assets/images/banano/banano-caja-exportacion-verde-sq.jpg?v=5" alt="Banano Verde de Exportación" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- FOTO 2 (Calibrador técnico control de calidad) -->
+        <div class="gallery-card" data-src="assets/images/banano/banano-calibrador-control-calidad.jpg?v=5">
+          <img src="assets/images/banano/banano-calibrador-control-calidad-sq.jpg?v=5" alt="Calibración de Banano" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- FOTO 3 (Tina de desleche y lavado en empacadora) -->
+        <div class="gallery-card" data-src="assets/images/banano/banano-tina-lavado-empacadora.jpg?v=5">
+          <img src="assets/images/banano/banano-tina-lavado-empacadora-sq.jpg?v=5" alt="Lavado en Empacadora" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- FOTO 4 (Bananos amarillos maduros en primer plano) -->
+        <div class="gallery-card" data-src="assets/images/banano/banano-cavendish-amarillo-maduro.jpg?v=5">
+          <img src="assets/images/banano/banano-cavendish-amarillo-maduro-sq.jpg?v=5" alt="Banano Cavendish Maduro" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- FOTO 5 (Manos de banano amarillo en exhibición) -->
+        <div class="gallery-card" data-src="assets/images/banano/banano-manos-amarillas-retail.jpg?v=5">
+          <img src="assets/images/banano/banano-manos-amarillas-retail-sq.jpg?v=5" alt="Manos de Banano en Retail" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- FOTO 6 (Racimo en plantación) -->
+        <div class="gallery-card" data-src="assets/images/banano/banano-racimo-campo.jpg?v=5">
+          <img src="assets/images/banano/banano-racimo-campo-sq.jpg?v=5" alt="Racimo de Banano en Campo" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- LIGHTBOX MODAL PARA VER FOTOS EN PANTALLA COMPLETA -->
+  <div class="lightbox-modal" id="lightboxModal">
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    <button type="button" class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+    <button type="button" class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+    
+    <div class="lightbox-dialog">
+      <div class="lightbox-img-wrapper">
+        <img src="" alt="Vista ampliada" class="lightbox-img" id="lightboxImg">
+      </div>
+      <div class="lightbox-footer">
+        <p class="lightbox-caption" id="lightboxCaption"></p>
+        <span class="lightbox-counter" id="lightboxCounter">1 / 1</span>
+      </div>
+    </div>
+  </div>
 
   <!-- COTIZADOR DEDICADO PARA ESTE PRODUCTO -->
   <section class="section-padding" id="cotizador-producto" style="background: var(--bg-dark); color: #FFFFFF;">
