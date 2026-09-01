@@ -52,7 +52,7 @@ function render_menu_nav_html($menuItems, $isProductPage = false) {
     $html = '';
     foreach ($menuItems as $item) {
         if (isset($item['visible']) && $item['visible'] === false) continue;
-        if (!empty($item['is_cta'])) continue; // Handled separately
+        if (!empty($item['is_cta'])) continue;
 
         $url = $item['url'];
         if ($isProductPage && strpos($url, '#') === 0) {
@@ -82,7 +82,6 @@ function render_gallery_html($gallery, $fruitName) {
     $i = 1;
     foreach ($gallery as $imgUrl) {
         $cleanUrl = strtok($imgUrl, '?');
-        // Generate square thumb path
         if (strpos($cleanUrl, '-sq.') === false) {
             $pathInfo = pathinfo($cleanUrl);
             $sqUrl = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '-sq.jpg';
@@ -115,22 +114,48 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
         foreach ($p['nutri'] as $n) {
             $nutriHtml .= "            <div class=\"nutrition-card\">\n";
             $nutriHtml .= "              <div class=\"nutri-icon\"><i class=\"fa-solid {$n['icon']}\"></i></div>\n";
-            $nutriHtml .= "              <h4 data-i18n=\"{$p['id']}_nutri_{$n['icon']}_title\">{$n['title_es']}</h4>\n";
-            $nutriHtml .= "              <p data-i18n=\"{$p['id']}_nutri_{$n['icon']}_desc\">{$n['desc_es']}</p>\n";
+            $nutriHtml .= "              <h4>{$n['title_es']}</h4>\n";
+            $nutriHtml .= "              <p>{$n['desc_es']}</p>\n";
             $nutriHtml .= "            </div>\n";
         }
     }
     
     $cleanMainImg = strtok($p['img'], '?') . '?v=' . time();
-    
+    $companyDesc = !empty($settings['company_desc']) ? $settings['company_desc'] : 'Empresa exportadora ecuatoriana líder en frutas exóticas y tradicionales de calidad premium.';
+    $fbUrl = !empty($settings['social']['facebook']) ? $settings['social']['facebook'] : '#';
+    $igUrl = !empty($settings['social']['instagram']) ? $settings['social']['instagram'] : '#';
+    $liUrl = !empty($settings['social']['linkedin']) ? $settings['social']['linkedin'] : '#';
+    $phone = !empty($settings['phone']) ? $settings['phone'] : '';
+    $email = !empty($settings['email']) ? $settings['email'] : '';
+    $address = !empty($settings['address']) ? $settings['address'] : '';
+    $whatsapp = !empty($settings['whatsapp']) ? $settings['whatsapp'] : '';
+    $certsBadge = !empty($settings['certs_badge']) ? $settings['certs_badge'] : '';
+
+    $pName = $p['name_es'];
+    $pScientific = $p['scientific'];
+    $pBadge = $p['badge_es'];
+    $pTagline = $p['tagline_es'];
+    $pHeroClass = $p['hero_class'];
+    $pOrigin = $p['origin_es'];
+    $pGrade = $p['grade_es'];
+    $pCalibers = $p['calibers_es'];
+    $pLength = $p['length_es'];
+    $pBrix = $p['brix_es'];
+    $pPack = $p['pack_es'];
+    $pTemp = $p['temp_es'];
+    $pVent = $p['vent_es'];
+    $pShelf = $p['shelf_es'];
+    $pPallet = $p['pallet_es'];
+    $pCerts = $p['certs_es'];
+
     $content = <<<HTML
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{$p['name_es']} | Exportación Global Market GM</title>
-  <meta name="description" content="{$p['tagline_es']} Ficha técnica, calibres, empaque y cotización B2B.">
+  <title>{$pName} | Exportación Global Market GM</title>
+  <meta name="description" content="{$pTagline} Ficha técnica, calibres, empaque y cotización B2B.">
   <link rel="icon" type="image/png" href="assets/images/favicon.png?v=3">
 
   <!-- Google Fonts & FontAwesome -->
@@ -148,9 +173,9 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
   <div class="top-bar">
     <div class="container top-bar-inner">
       <div class="top-bar-contact">
-        <a href="tel:{$settings['phone']}"><i class="fa-solid fa-phone"></i> {$settings['phone']}</a>
-        <a href="mailto:{$settings['email']}"><i class="fa-solid fa-envelope"></i> {$settings['email']}</a>
-        <span class="top-bar-badge"><i class="fa-solid fa-shield-halved"></i> {$settings['certs_badge']}</span>
+        <a href="tel:{$phone}"><i class="fa-solid fa-phone"></i> {$phone}</a>
+        <a href="mailto:{$email}"><i class="fa-solid fa-envelope"></i> {$email}</a>
+        <span class="top-bar-badge"><i class="fa-solid fa-shield-halved"></i> {$certsBadge}</span>
       </div>
       <div class="top-bar-lang">
         <button type="button" class="lang-btn active" data-lang="es">🇪🇸 ES</button>
@@ -177,29 +202,29 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
   </header>
 
   <!-- PRODUCT HERO HEADER CON IMAGEN -->
-  <section class="product-hero {$p['hero_class']}">
+  <section class="product-hero {$pHeroClass}">
     <div class="container">
       <div class="breadcrumbs">
         <a href="index.html">Inicio</a>
         <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
         <a href="index.html#productos">Nuestros Productos</a>
         <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
-        <span>{$p['name_es']}</span>
+        <span>{$pName}</span>
       </div>
 
       <div class="product-hero-content" style="max-width: 800px;">
         <span class="badge badge-gold" style="display: inline-block; margin-bottom: 0.75rem; padding: 0.35rem 0.85rem; border-radius: 99px;">
-          <i class="fa-solid fa-award"></i> {$p['badge_es']}
+          <i class="fa-solid fa-award"></i> {$pBadge}
         </span>
-        <h1 class="hero-title" style="font-size: 2.75rem; margin-bottom: 0.75rem;">{$p['name_es']}</h1>
-        <p style="font-size: 1.15rem; font-style: italic; color: var(--accent-gold); margin-bottom: 1rem;">{$p['scientific']}</p>
-        <p class="hero-desc" style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem;">{$p['tagline_es']}</p>
+        <h1 class="hero-title" style="font-size: 2.75rem; margin-bottom: 0.75rem;">{$pName}</h1>
+        <p style="font-size: 1.15rem; font-style: italic; color: var(--accent-gold); margin-bottom: 1rem;">{$pScientific}</p>
+        <p class="hero-desc" style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem;">{$pTagline}</p>
 
         <div class="hero-cta-group">
           <a href="#cotizador-producto" class="btn btn-primary btn-lg">
-            <i class="fa-solid fa-file-invoice-dollar"></i> Cotizar {$p['name_es']}
+            <i class="fa-solid fa-file-invoice-dollar"></i> Cotizar {$pName}
           </a>
-          <a href="https://wa.me/{$settings['whatsapp']}?text=Hola%20Global%20Market,%20deseo%20cotizar%20{$p['name_es']}%20para%20exportación." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-lg">
+          <a href="https://wa.me/{$whatsapp}?text=Hola%20Global%20Market,%20deseo%20cotizar%20{$pName}%20para%20exportación." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-lg">
             <i class="fa-brands fa-whatsapp"></i> Chat WhatsApp
           </a>
         </div>
@@ -215,11 +240,11 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
         <!-- LEFT: IMAGEN HD & NUTRICIÓN -->
         <div>
           <div class="detail-gallery-box">
-            <img src="{$cleanMainImg}" alt="{$p['name_es']}" class="detail-main-img">
+            <img src="{$cleanMainImg}" alt="{$pName}" class="detail-main-img">
             <div style="padding: 1.25rem; background: #FFFFFF; display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <strong style="color: var(--primary-dark); font-size: 1.05rem;"><i class="fa-solid fa-location-dot text-primary"></i> Origen:</strong>
-                <span style="font-size: 0.95rem; color: var(--text-muted); margin-left: 0.35rem;">{$p['origin_es']}</span>
+                <span style="font-size: 0.95rem; color: var(--text-muted); margin-left: 0.35rem;">{$pOrigin}</span>
               </div>
               <span class="product-badge badge-green" style="position: static;">100% Export Quality</span>
             </div>
@@ -247,47 +272,47 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
               <tbody>
                 <tr>
                   <th>Especie / Variedad:</th>
-                  <td><strong>{$p['scientific']}</strong></td>
+                  <td><strong>{$pScientific}</strong></td>
                 </tr>
                 <tr>
                   <th>Grado Comercial:</th>
-                  <td>{$p['grade_es']}</td>
+                  <td>{$pGrade}</td>
                 </tr>
                 <tr>
                   <th>Calibres / Tamaños:</th>
-                  <td>{$p['calibers_es']}</td>
+                  <td>{$pCalibers}</td>
                 </tr>
                 <tr>
                   <th>Longitud / Dimensiones:</th>
-                  <td>{$p['length_es']}</td>
+                  <td>{$pLength}</td>
                 </tr>
                 <tr>
                   <th>Dulzura / Sólidos Solubles:</th>
-                  <td>{$p['brix_es']}</td>
+                  <td>{$pBrix}</td>
                 </tr>
                 <tr>
                   <th>Formato de Empaque:</th>
-                  <td>{$p['pack_es']}</td>
+                  <td>{$pPack}</td>
                 </tr>
                 <tr>
                   <th>Temperatura en Reefer:</th>
-                  <td>{$p['temp_es']}</td>
+                  <td>{$pTemp}</td>
                 </tr>
                 <tr>
                   <th>Ventilación & Humedad:</th>
-                  <td>{$p['vent_es']}</td>
+                  <td>{$pVent}</td>
                 </tr>
                 <tr>
                   <th>Vida Útil en Tránsito:</th>
-                  <td>{$p['shelf_es']}</td>
+                  <td>{$pShelf}</td>
                 </tr>
                 <tr>
                   <th>Paletizado & Capacidad:</th>
-                  <td>{$p['pallet_es']}</td>
+                  <td>{$pPallet}</td>
                 </tr>
                 <tr>
                   <th>Certificaciones:</th>
-                  <td><span style="color: var(--primary); font-weight: 600;">{$p['certs_es']}</span></td>
+                  <td><span style="color: var(--primary); font-weight: 600;">{$pCerts}</span></td>
                 </tr>
               </tbody>
             </table>
@@ -306,24 +331,23 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
     </div>
   </section>
 
-  <!-- SECCIÓN DE GALERÍA DE FOTOS (CUADRÍCULA UNIFORME 1:1) -->
+  <!-- SECCIÓN DE GALERÍA DE FOTOS -->
   <section class="gallery-section" id="galeria">
     <div class="container">
       <div class="section-header text-center">
         <div class="section-tag">Galería de Imágenes</div>
-        <h2 class="section-title">{$p['name_es']}</h2>
+        <h2 class="section-title">{$pName}</h2>
         <p class="section-subtitle">
           Catálogo visual de exportación. Haz clic sobre cualquier fotografía para verla en alta definición.
         </p>
       </div>
 
-      <!-- GRID UNIFORME 1:1 (FOTOGRAFÍAS REALES ORDENADAS) -->
       <div class="gallery-grid" id="galleryGrid">
 {$galleryHtml}      </div>
     </div>
   </section>
 
-  <!-- LIGHTBOX MODAL PARA VER FOTOS EN PANTALLA COMPLETA -->
+  <!-- LIGHTBOX MODAL -->
   <div class="lightbox-modal" id="lightboxModal">
     <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
     <button type="button" class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
@@ -340,12 +364,12 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
     </div>
   </div>
 
-  <!-- COTIZADOR DEDICADO PARA ESTE PRODUCTO -->
+  <!-- COTIZADOR DEDICADO -->
   <section class="section-padding" id="cotizador-producto" style="background: var(--bg-dark); color: #FFFFFF;">
     <div class="container">
       <div class="section-header text-center">
         <div class="section-tag">Cotización Directa</div>
-        <h2 class="section-title text-white">Solicitar Cotización de {$p['name_es']}</h2>
+        <h2 class="section-title text-white">Solicitar Cotización de {$pName}</h2>
         <p class="section-subtitle text-white-muted">
           Completa el formulario y recibe una propuesta FOB / CIF formal en menos de 24 horas.
         </p>
@@ -353,7 +377,7 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
 
       <div class="quote-form-card" style="max-width: 800px; margin: 0 auto;">
         <form id="productQuoteForm" class="quote-form">
-          <input type="hidden" id="selectedProduct" value="{$p['name_es']}">
+          <input type="hidden" id="selectedProduct" value="{$pName}">
           <div class="form-grid">
             <div class="form-group">
               <label for="pClientName" class="form-label"><i class="fa-solid fa-user"></i> Nombre Completo / Empresa *</label>
@@ -408,13 +432,13 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
       <div class="footer-col">
         <img src="assets/images/logo-dark.jpg?v=3" alt="Global Market GM" class="footer-logo">
         <p class="footer-desc">
-          {$settings['company_desc'] ?? 'Empresa exportadora ecuatoriana líder en frutas exóticas y tradicionales de calidad premium.'}
+          {$companyDesc}
         </p>
         <div class="footer-social">
-          <a href="{$settings['social']['facebook']}" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="{$settings['social']['instagram']}" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-          <a href="{$settings['social']['linkedin']}" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-          <a href="https://wa.me/{$settings['whatsapp']}" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="{$fbUrl}" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="{$igUrl}" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="{$liUrl}" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="https://wa.me/{$whatsapp}" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
       </div>
 
@@ -447,15 +471,15 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
         <h4 class="footer-title">Contacto Directo</h4>
         <div class="footer-contact-item">
           <i class="fa-solid fa-location-dot"></i>
-          <span>{$settings['address']}</span>
+          <span>{$address}</span>
         </div>
         <div class="footer-contact-item">
           <i class="fa-solid fa-phone"></i>
-          <span>{$settings['phone']}</span>
+          <span>{$phone}</span>
         </div>
         <div class="footer-contact-item">
           <i class="fa-solid fa-envelope"></i>
-          <span>{$settings['email']}</span>
+          <span>{$email}</span>
         </div>
         <div class="footer-contact-item">
           <i class="fa-solid fa-clock"></i>
@@ -477,9 +501,9 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
   </footer>
 
   <!-- FLOATING WHATSAPP BUTTON -->
-  <a href="https://wa.me/{$settings['whatsapp']}?text=Hola%20Global%20Market,%20deseo%20información%20sobre%20la%20exportación%20de%20{$p['name_es']}." class="floating-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
+  <a href="https://wa.me/{$whatsapp}?text=Hola%20Global%20Market,%20deseo%20información%20sobre%20la%20exportación%20de%20{$pName}." class="floating-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
     <i class="fa-brands fa-whatsapp"></i>
-    <span class="whatsapp-tooltip">¿Deseas cotizar {$p['name_es']}? Chatea con nosotros</span>
+    <span class="whatsapp-tooltip">¿Deseas cotizar {$pName}? Chatea con nosotros</span>
   </a>
 
   <!-- SCRIPTS -->
@@ -498,29 +522,37 @@ function rebuild_home_page($home, $products, $settings, $menuItems = null) {
 
     $menuHtml = render_menu_nav_html($menuItems, false);
     
-    // Build Products Grid on Home
+    // Products Grid
     $productsGridHtml = '';
     foreach ($products as $p) {
         $cleanImg = strtok($p['img'], '?') . '?v=' . time();
+        $pName = $p['name_es'];
+        $pScientific = $p['scientific'];
+        $pBadge = $p['badge_es'];
+        $pTagline = $p['tagline_es'];
+        $pCalibers = $p['calibers_es'];
+        $pPack = $p['pack_es'];
+        $pFile = $p['file'];
+
         $productsGridHtml .= <<<HTML
         <div class="product-card">
           <div class="product-img-wrapper">
-            <img src="{$cleanImg}" alt="{$p['name_es']}" class="product-img" loading="lazy">
-            <span class="product-badge badge-green">{$p['badge_es']}</span>
+            <img src="{$cleanImg}" alt="{$pName}" class="product-img" loading="lazy">
+            <span class="product-badge badge-green">{$pBadge}</span>
           </div>
           <div class="product-content">
-            <span class="product-tag">{$p['scientific']}</span>
-            <h3 class="product-title">{$p['name_es']}</h3>
-            <p class="product-desc">{$p['tagline_es']}</p>
+            <span class="product-tag">{$pScientific}</span>
+            <h3 class="product-title">{$pName}</h3>
+            <p class="product-desc">{$pTagline}</p>
             <div class="product-meta">
-              <span><i class="fa-solid fa-ruler-combined"></i> {$p['calibers_es']}</span>
-              <span><i class="fa-solid fa-box"></i> {$p['pack_es']}</span>
+              <span><i class="fa-solid fa-ruler-combined"></i> {$pCalibers}</span>
+              <span><i class="fa-solid fa-box"></i> {$pPack}</span>
             </div>
             <div class="product-card-actions">
-              <a href="{$p['file']}" class="btn btn-outline-primary btn-sm btn-block">
+              <a href="{$pFile}" class="btn btn-outline-primary btn-sm btn-block">
                 <i class="fa-solid fa-circle-info"></i> Ver Ficha y Galería
               </a>
-              <a href="{$p['file']}#cotizador-producto" class="btn btn-primary btn-sm btn-block">
+              <a href="{$pFile}#cotizador-producto" class="btn btn-primary btn-sm btn-block">
                 <i class="fa-solid fa-file-invoice-dollar"></i> Cotizar
               </a>
             </div>
@@ -533,11 +565,14 @@ HTML;
     $certsHtml = '';
     if (!empty($home['certs']['items'])) {
         foreach ($home['certs']['items'] as $c) {
+            $cIcon = $c['icon'];
+            $cTitle = $c['title'];
+            $cDesc = $c['desc'];
             $certsHtml .= <<<HTML
           <div class="cert-card">
-            <div class="cert-icon"><i class="fa-solid {$c['icon']}"></i></div>
-            <h3 class="cert-title">{$c['title']}</h3>
-            <p class="cert-desc">{$c['desc']}</p>
+            <div class="cert-icon"><i class="fa-solid {$cIcon}"></i></div>
+            <h3 class="cert-title">{$cTitle}</h3>
+            <p class="cert-desc">{$cDesc}</p>
           </div>
 HTML;
         }
@@ -547,12 +582,15 @@ HTML;
     $logisticsHtml = '';
     if (!empty($home['logistics']['steps'])) {
         foreach ($home['logistics']['steps'] as $s) {
+            $sNum = $s['num'];
+            $sTitle = $s['title'];
+            $sDesc = $s['desc'];
             $logisticsHtml .= <<<HTML
             <div class="logistics-step">
-              <span class="step-num">{$s['num']}</span>
+              <span class="step-num">{$sNum}</span>
               <div>
-                <h4 class="step-title">{$s['title']}</h4>
-                <p class="step-desc">{$s['desc']}</p>
+                <h4 class="step-title">{$sTitle}</h4>
+                <p class="step-desc">{$sDesc}</p>
               </div>
             </div>
 HTML;
@@ -563,18 +601,54 @@ HTML;
     $heroStatsHtml = '';
     if (!empty($home['hero']['stats'])) {
         foreach ($home['hero']['stats'] as $st) {
+            $stNum = $st['num'];
+            $stLabel = $st['label'];
             $heroStatsHtml .= <<<HTML
             <div class="stat-card">
-              <span class="stat-num">{$st['num']}</span>
-              <span class="stat-lbl">{$st['label']}</span>
+              <span class="stat-num">{$stNum}</span>
+              <span class="stat-lbl">{$stLabel}</span>
             </div>
 HTML;
         }
     }
 
-    $cleanHeroBg = strtok($home['hero']['bg_image'] ?? 'assets/images/hero-banner.jpg', '?') . '?v=' . time();
-    $cleanAboutImg = strtok($home['about']['image'] ?? 'assets/images/hero-banner.jpg', '?') . '?v=' . time();
-    $cleanLogisticsImg = strtok($home['logistics']['image'] ?? 'assets/images/logistica.jpg', '?') . '?v=' . time();
+    $cleanHeroBg = strtok(!empty($home['hero']['bg_image']) ? $home['hero']['bg_image'] : 'assets/images/hero-banner.jpg', '?') . '?v=' . time();
+    $cleanAboutImg = strtok(!empty($home['about']['image']) ? $home['about']['image'] : 'assets/images/hero-banner.jpg', '?') . '?v=' . time();
+    $cleanLogisticsImg = strtok(!empty($home['logistics']['image']) ? $home['logistics']['image'] : 'assets/images/logistica.jpg', '?') . '?v=' . time();
+
+    $heroBadge = !empty($home['hero']['badge']) ? $home['hero']['badge'] : '';
+    $heroTitle = !empty($home['hero']['title']) ? $home['hero']['title'] : '';
+    $heroDesc = !empty($home['hero']['desc']) ? $home['hero']['desc'] : '';
+    $heroBtnExplore = !empty($home['hero']['btn_explore']) ? $home['hero']['btn_explore'] : 'Explorar Catálogo';
+    $heroBtnQuote = !empty($home['hero']['btn_quote']) ? $home['hero']['btn_quote'] : 'Cotizador B2B';
+    $heroBtnWa = !empty($home['hero']['btn_whatsapp']) ? $home['hero']['btn_whatsapp'] : 'WhatsApp Directo';
+
+    $aboutTag = !empty($home['about']['tag']) ? $home['about']['tag'] : 'Quiénes Somos';
+    $aboutTitle = !empty($home['about']['title']) ? $home['about']['title'] : '';
+    $aboutP1 = !empty($home['about']['p1']) ? $home['about']['p1'] : '';
+    $aboutP2 = !empty($home['about']['p2']) ? $home['about']['p2'] : '';
+    $aboutBadgeTitle = !empty($home['about']['badge_title']) ? $home['about']['badge_title'] : '';
+    $aboutBadgeSub = !empty($home['about']['badge_sub']) ? $home['about']['badge_sub'] : '';
+
+    $certsTag = !empty($home['certs']['tag']) ? $home['certs']['tag'] : 'Garantía de Calidad';
+    $certsTitle = !empty($home['certs']['title']) ? $home['certs']['title'] : '';
+    $certsDesc = !empty($home['certs']['desc']) ? $home['certs']['desc'] : '';
+
+    $logisticsTag = !empty($home['logistics']['tag']) ? $home['logistics']['tag'] : 'Operaciones';
+    $logisticsTitle = !empty($home['logistics']['title']) ? $home['logistics']['title'] : '';
+    $logisticsDesc = !empty($home['logistics']['desc']) ? $home['logistics']['desc'] : '';
+
+    $footerAbout = !empty($home['footer']['about_text']) ? $home['footer']['about_text'] : '';
+    $footerCopyright = !empty($home['footer']['copyright']) ? $home['footer']['copyright'] : '© 2026 GlobalMarket GM Cía. Ltda.';
+
+    $fbUrl = !empty($settings['social']['facebook']) ? $settings['social']['facebook'] : '#';
+    $igUrl = !empty($settings['social']['instagram']) ? $settings['social']['instagram'] : '#';
+    $liUrl = !empty($settings['social']['linkedin']) ? $settings['social']['linkedin'] : '#';
+    $phone = !empty($settings['phone']) ? $settings['phone'] : '';
+    $email = !empty($settings['email']) ? $settings['email'] : '';
+    $address = !empty($settings['address']) ? $settings['address'] : '';
+    $whatsapp = !empty($settings['whatsapp']) ? $settings['whatsapp'] : '';
+    $certsBadge = !empty($settings['certs_badge']) ? $settings['certs_badge'] : '';
 
     $content = <<<HTML
 <!DOCTYPE html>
@@ -611,11 +685,11 @@ HTML;
   <aside class="top-bar" aria-label="Información de contacto rápido">
     <div class="container top-bar-inner">
       <div class="top-bar-left">
-        <span><i class="fa-solid fa-location-dot"></i> <span>{$settings['address']}</span></span>
-        <span><i class="fa-solid fa-shield-halved"></i> <span>{$settings['certs_badge']}</span></span>
+        <span><i class="fa-solid fa-location-dot"></i> <span>{$address}</span></span>
+        <span><i class="fa-solid fa-shield-halved"></i> <span>{$certsBadge}</span></span>
       </div>
       <div class="top-bar-right">
-        <a href="mailto:{$settings['email']}" class="top-link"><i class="fa-regular fa-envelope"></i> {$settings['email']}</a>
+        <a href="mailto:{$email}" class="top-link"><i class="fa-regular fa-envelope"></i> {$email}</a>
         <div class="lang-switch-btn" id="langSwitch" title="Cambiar idioma">
           <span id="currentLangLabel">🇪🇸 ES</span> <i class="fa-solid fa-chevron-down"></i>
           <div class="lang-dropdown" id="langDropdown">
@@ -644,7 +718,7 @@ HTML;
           <i class="fa-solid fa-file-invoice-dollar"></i>
           <span>Cotizar Frutas</span>
         </a>
-        <a href="https://wa.me/{$settings['whatsapp']}?text=Hola%20Global%20Market,%20deseo%20solicitar%20información%20y%20cotización%20de%20frutas%20de%20exportación." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp-header" aria-label="WhatsApp">
+        <a href="https://wa.me/{$whatsapp}?text=Hola%20Global%20Market,%20deseo%20solicitar%20información%20y%20cotización%20de%20frutas%20de%20exportación." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp-header" aria-label="WhatsApp">
           <i class="fa-brands fa-whatsapp"></i>
         </a>
         <button type="button" class="mobile-toggle" id="mobileToggle" aria-label="Abrir menú">
@@ -681,26 +755,26 @@ HTML;
         <div class="hero-content">
           <div class="hero-badge animate-fade-in">
             <i class="fa-solid fa-seedling"></i>
-            <span>{$home['hero']['badge']}</span>
+            <span>{$heroBadge}</span>
           </div>
           <h1 class="hero-title animate-fade-in">
-            {$home['hero']['title']}
+            {$heroTitle}
           </h1>
           <p class="hero-subtitle animate-fade-in">
-            {$home['hero']['desc']}
+            {$heroDesc}
           </p>
           <div class="hero-buttons animate-fade-in">
             <a href="#productos" class="btn btn-primary btn-lg">
-              <span>{$home['hero']['btn_explore']}</span>
+              <span>{$heroBtnExplore}</span>
               <i class="fa-solid fa-arrow-right"></i>
             </a>
             <a href="#cotizador" class="btn btn-glass btn-lg">
               <i class="fa-solid fa-calculator"></i>
-              <span>{$home['hero']['btn_quote']}</span>
+              <span>{$heroBtnQuote}</span>
             </a>
-            <a href="https://wa.me/{$settings['whatsapp']}?text=Hola%20Global%20Market%20GM,%20deseo%20cotizar%20un%20contenedor%20de%20frutas." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-lg">
+            <a href="https://wa.me/{$whatsapp}?text=Hola%20Global%20Market%20GM,%20deseo%20cotizar%20un%20contenedor%20de%20frutas." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-lg">
               <i class="fa-brands fa-whatsapp"></i>
-              <span>{$home['hero']['btn_whatsapp']}</span>
+              <span>{$heroBtnWa}</span>
             </a>
           </div>
 
@@ -721,20 +795,20 @@ HTML;
               <div class="about-floating-badge">
                 <div class="badge-icon"><i class="fa-solid fa-leaf"></i></div>
                 <div>
-                  <h4>{$home['about']['badge_title']}</h4>
-                  <p>{$home['about']['badge_sub']}</p>
+                  <h4>{$aboutBadgeTitle}</h4>
+                  <p>{$aboutBadgeSub}</p>
                 </div>
               </div>
             </div>
           </div>
           <div class="about-text-content">
-            <div class="section-tag">{$home['about']['tag']}</div>
-            <h2 class="section-title">{$home['about']['title']}</h2>
+            <div class="section-tag">{$aboutTag}</div>
+            <h2 class="section-title">{$aboutTitle}</h2>
             <p class="section-desc">
-              {$home['about']['p1']}
+              {$aboutP1}
             </p>
             <p class="section-desc">
-              {$home['about']['p2']}
+              {$aboutP2}
             </p>
             <div class="about-pillars">
               <div class="pillar-item">
@@ -778,10 +852,10 @@ HTML;
     <section class="section-padding cert-section" id="certificaciones">
       <div class="container">
         <div class="section-header text-center">
-          <div class="section-tag">{$home['certs']['tag']}</div>
-          <h2 class="section-title text-white">{$home['certs']['title']}</h2>
+          <div class="section-tag">{$certsTag}</div>
+          <h2 class="section-title text-white">{$certsTitle}</h2>
           <p class="section-subtitle text-white-muted">
-            {$home['certs']['desc']}
+            {$certsDesc}
           </p>
         </div>
 
@@ -795,10 +869,10 @@ HTML;
       <div class="container">
         <div class="grid-2-cols align-center">
           <div class="logistics-content">
-            <div class="section-tag">{$home['logistics']['tag']}</div>
-            <h2 class="section-title">{$home['logistics']['title']}</h2>
+            <div class="section-tag">{$logisticsTag}</div>
+            <h2 class="section-title">{$logisticsTitle}</h2>
             <p class="section-desc">
-              {$home['logistics']['desc']}
+              {$logisticsDesc}
             </p>
             <div class="logistics-steps">
 {$logisticsHtml}            </div>
@@ -937,13 +1011,13 @@ HTML;
             <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
             <h3 class="contact-card-title">Llamadas Directas</h3>
             <p class="contact-card-desc">Atención comercial B2B</p>
-            <a href="tel:{$settings['phone']}" class="contact-link">{$settings['phone']}</a>
+            <a href="tel:{$phone}" class="contact-link">{$phone}</a>
           </div>
           <div class="contact-card highlight-card">
             <div class="contact-icon"><i class="fa-brands fa-whatsapp"></i></div>
             <h3 class="contact-card-title">WhatsApp Exportaciones</h3>
             <p class="contact-card-desc">Respuesta inmediata 24/7</p>
-            <a href="https://wa.me/{$settings['whatsapp']}" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-sm">
+            <a href="https://wa.me/{$whatsapp}" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-sm">
               <i class="fa-brands fa-whatsapp"></i> Chatear con Asesor
             </a>
           </div>
@@ -951,12 +1025,12 @@ HTML;
             <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
             <h3 class="contact-card-title">Correo Electrónico</h3>
             <p class="contact-card-desc">Envío de RFQ y propuestas</p>
-            <a href="mailto:{$settings['email']}" class="contact-link">{$settings['email']}</a>
+            <a href="mailto:{$email}" class="contact-link">{$email}</a>
           </div>
           <div class="contact-card">
             <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
             <h3 class="contact-card-title">Sede de Operaciones</h3>
-            <p class="contact-card-desc">{$settings['address']}</p>
+            <p class="contact-card-desc">{$address}</p>
             <span class="contact-link" style="color: var(--primary); font-weight: 600;">Ecuador</span>
           </div>
         </div>
@@ -970,13 +1044,13 @@ HTML;
       <div class="footer-col">
         <img src="assets/images/logo-dark.jpg?v=3" alt="Global Market GM" class="footer-logo">
         <p class="footer-desc">
-          {$home['footer']['about_text']}
+          {$footerAbout}
         </p>
         <div class="footer-social">
-          <a href="{$settings['social']['facebook']}" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="{$settings['social']['instagram']}" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-          <a href="{$settings['social']['linkedin']}" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
-          <a href="https://wa.me/{$settings['whatsapp']}" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="{$fbUrl}" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="{$igUrl}" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="{$liUrl}" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="https://wa.me/{$whatsapp}" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
       </div>
 
@@ -1009,15 +1083,15 @@ HTML;
         <h4 class="footer-title">Contacto Directo</h4>
         <div class="footer-contact-item">
           <i class="fa-solid fa-location-dot"></i>
-          <span>{$settings['address']}</span>
+          <span>{$address}</span>
         </div>
         <div class="footer-contact-item">
           <i class="fa-solid fa-phone"></i>
-          <span>{$settings['phone']}</span>
+          <span>{$phone}</span>
         </div>
         <div class="footer-contact-item">
           <i class="fa-solid fa-envelope"></i>
-          <span>{$settings['email']}</span>
+          <span>{$email}</span>
         </div>
         <div class="footer-contact-item">
           <i class="fa-solid fa-clock"></i>
@@ -1028,7 +1102,7 @@ HTML;
 
     <div class="footer-bottom">
       <div class="container footer-bottom-inner">
-        <p>{$home['footer']['copyright']}</p>
+        <p>{$footerCopyright}</p>
         <div class="footer-legal">
           <span>Ecuador Export Quality</span>
           <span>•</span>
@@ -1039,7 +1113,7 @@ HTML;
   </footer>
 
   <!-- FLOATING WHATSAPP BUTTON -->
-  <a href="https://wa.me/{$settings['whatsapp']}?text=Hola%20Global%20Market%20GM,%20deseo%20información%20sobre%20frutas%20de%20exportación." class="floating-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
+  <a href="https://wa.me/{$whatsapp}?text=Hola%20Global%20Market%20GM,%20deseo%20información%20sobre%20frutas%20de%20exportación." class="floating-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
     <i class="fa-brands fa-whatsapp"></i>
     <span class="whatsapp-tooltip">¿Deseas cotizar frutas de exportación? Chatea con nosotros</span>
   </a>
