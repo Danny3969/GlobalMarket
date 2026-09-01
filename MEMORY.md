@@ -7,6 +7,19 @@
 
 ---
 
+## 📦 Portafolio Oficial de 8 Productos y Páginas Dedicadas
+Cada producto cuenta con su tarjeta en la página principal y su página HTML dedicada completa (con cabecera de imagen en alta resolución, breadcrumbs, ficha técnica B2B completa, cuadrícula nutricional, trazabilidad de cadena de frío, cotizador directo y navegación entre productos):
+1. **Banano Cavendish Premium**: [`banano.html`](https://globalmarket-gm.com/banano.html) - *Musa acuminata* (Williams/Grand Nain)
+2. **Plátano Verde / Barraganete**: [`platano.html`](https://globalmarket-gm.com/platano.html) - *Musa balbisiana x acuminata*
+3. **Pitahaya Red Dragon (Roja)**: [`pitahaya-roja.html`](https://globalmarket-gm.com/pitahaya-roja.html) - *Hylocereus monacanthus*
+4. **Pitahaya Yellow Dragon (Palora)**: [`pitahaya-amarilla.html`](https://globalmarket-gm.com/pitahaya-amarilla.html) - *Selenicereus megalanthus*
+5. **Malanga / Taro (Blanca & Lila)**: [`malanga.html`](https://globalmarket-gm.com/malanga.html) - *Xanthosoma sagittifolium* / *Colocasia*
+6. **Maracuyá (Passion Fruit)**: [`maracuya.html`](https://globalmarket-gm.com/maracuya.html) - *Passiflora edulis f. flavicarpa*
+7. **Piña Golden MD2**: [`pina.html`](https://globalmarket-gm.com/pina.html) - *Ananas comosus* var. MD2
+8. **Mango de Exportación**: [`mango.html`](https://globalmarket-gm.com/mango.html) - *Mangifera indica* (Tommy Atkins / Kent / Keitt)
+
+---
+
 ## 1. 📌 Resumen Ejecutivo del Proyecto
 **Global Market GM** es una plataforma web corporativa bilingüe (Español / Inglés) de clase mundial diseñada para la exportación mayorista internacional de frutas tropicales frescas desde Ecuador y Latinoamérica hacia Norteamérica, Europa, Asia y Medio Oriente.
 
