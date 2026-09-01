@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     activeFruitId: 'banano'
   };
 
+  let dragSrcIndex = null;
+
   // Toast Notification Helper
   function showToast(message, isError = false) {
     const toast = document.getElementById('adminToast');
@@ -33,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 1. RENDER ACTIVE FRUIT & GALLERY
+  // 1. RENDER ACTIVE FRUIT, SPECIAL IMAGES & DRAGGABLE GALLERY
   // =========================================================================
   function renderActiveFruit(fruitId) {
     const fruit = appState.products.find(p => p.id === fruitId);
@@ -46,6 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('currentFruitScientific').textContent = fruit.scientific;
     document.getElementById('btnPreviewFruit').href = `../${fruit.file}`;
     document.getElementById('specFruitId').value = fruit.id;
+
+    // Special images previews
+    const cleanHeroBg = (fruit.hero_bg || fruit.img || '').split('?')[0];
+    const cleanMainImg = (fruit.img || '').split('?')[0];
+    document.getElementById('previewHeroBg').src = `../${cleanHeroBg}?v=${Date.now()}`;
+    document.getElementById('previewMainImg').src = `../${cleanMainImg}?v=${Date.now()}`;
 
     // Photo count
     const photoCount = (fruit.gallery || []).length;
@@ -86,15 +94,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const gallery = fruit.gallery || [];
     if (gallery.length === 0) {
-      grid.innerHTML = '<div style="grid-column: 1/-1; padding: 3rem 1rem; text-align: center; color: var(--text-muted);"><i class="fa-regular fa-image" style="font-size: 2.5rem; margin-bottom: 0.75rem; display: block; opacity: 0.4;"></i>No hay fotos en esta galería todavía. Sube fotografías arrastrándolas arriba o con el botón "Seleccionar Fotografía".</div>';
+      grid.innerHTML = '<div style="grid-column: 1/-1; padding: 3rem 1rem; text-align: center; color: var(--text-muted);"><i class="fa-regular fa-image" style="font-size: 2.5rem; margin-bottom: 0.75rem; display: block; opacity: 0.4;"></i>No hay fotos en esta galería todavía. Sube fotografías arrastrándolas arriba o con el botón "Subir Nueva Fotografía".</div>';
       return;
     }
 
     const cleanMainImg = (fruit.img || '').split('?')[0];
+    const cleanHeroBg = (fruit.hero_bg || '').split('?')[0];
 
     gallery.forEach((imgUrl, index) => {
       const cleanUrl = imgUrl.split('?')[0];
       const isMain = cleanUrl === cleanMainImg;
+      const isHero = cleanUrl === cleanHeroBg;
       
       // Compute 1:1 square thumb URL
       let sqUrl = cleanUrl;
@@ -107,25 +117,107 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const card = document.createElement('div');
       card.className = 'admin-photo-card';
+      card.setAttribute('draggable', 'true');
+      card.setAttribute('data-index', index);
+      card.setAttribute('data-url', cleanUrl);
+
       card.innerHTML = `
-        ${isMain ? '<span class="photo-badge-main"><i class="fa-solid fa-star"></i> Foto Principal</span>' : ''}
+        <span class="photo-order-badge">#${index + 1}</span>
+        ${isMain ? '<span class="photo-badge-main"><i class="fa-solid fa-star"></i> Principal</span>' : ''}
+        ${isHero ? '<span class="photo-badge-main" style="top: 36px; background: #0d5c3a;"><i class="fa-solid fa-panorama"></i> Cabecera</span>' : ''}
         <img src="../${sqUrl}?v=${Date.now()}" alt="${fruit.name_es}" onerror="this.src='../${cleanUrl}'">
         <div class="photo-actions-overlay">
-          <a href="../${cleanUrl}" target="_blank" class="btn-photo-action" style="background: rgba(255,255,255,0.2); color: #fff;" title="Ver en alta resolución">
-            <i class="fa-solid fa-up-right-and-down-left-and-up-right-to-center"></i>
-          </a>
-          ${!isMain ? `
-            <button type="button" class="btn-photo-action btn-photo-main" title="Fijar como Foto Principal de la Ficha" data-url="${cleanUrl}">
-              <i class="fa-regular fa-star"></i>
+          <div class="action-row">
+            ${index > 0 ? `<button type="button" class="btn-photo-action btn-photo-move btn-move-left" title="Mover hacia la izquierda" data-index="${index}"><i class="fa-solid fa-chevron-left"></i></button>` : ''}
+            <a href="../${cleanUrl}" target="_blank" class="btn-photo-action" style="background: rgba(255,255,255,0.2); color: #fff;" title="Ver en alta resolución">
+              <i class="fa-solid fa-up-right-and-down-left-and-up-right-to-center"></i>
+            </a>
+            ${index < gallery.length - 1 ? `<button type="button" class="btn-photo-action btn-photo-move btn-move-right" title="Mover hacia la derecha" data-index="${index}"><i class="fa-solid fa-chevron-right"></i></button>` : ''}
+          </div>
+          <div class="action-row" style="margin-top: 0.35rem;">
+            ${!isMain ? `
+              <button type="button" class="btn-photo-action btn-photo-main" title="Fijar como Foto Principal de Referencia" data-url="${cleanUrl}">
+                <i class="fa-solid fa-star"></i>
+              </button>
+            ` : ''}
+            ${!isHero ? `
+              <button type="button" class="btn-photo-action btn-photo-hero" title="Fijar como Imagen de Cabecera (Hero Banner)" data-url="${cleanUrl}">
+                <i class="fa-solid fa-panorama"></i>
+              </button>
+            ` : ''}
+            <button type="button" class="btn-photo-action btn-photo-delete" title="Eliminar Foto" data-index="${index}" data-url="${cleanUrl}">
+              <i class="fa-solid fa-trash-can"></i>
             </button>
-          ` : ''}
-          <button type="button" class="btn-photo-action btn-photo-delete" title="Eliminar Foto" data-index="${index}" data-url="${cleanUrl}">
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
+          </div>
         </div>
       `;
 
-      // Set as Main Photo Action
+      // Drag and drop event listeners
+      card.addEventListener('dragstart', (e) => {
+        dragSrcIndex = index;
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', index);
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        document.querySelectorAll('.admin-photo-card').forEach(c => c.classList.remove('drag-over'));
+      });
+
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
+
+      card.addEventListener('dragenter', () => {
+        if (dragSrcIndex !== index) {
+          card.classList.add('drag-over');
+        }
+      });
+
+      card.addEventListener('dragleave', () => {
+        card.classList.remove('drag-over');
+      });
+
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        const srcIdx = dragSrcIndex;
+        const targetIdx = index;
+
+        if (srcIdx !== null && srcIdx !== targetIdx) {
+          const item = fruit.gallery.splice(srcIdx, 1)[0];
+          fruit.gallery.splice(targetIdx, 0, item);
+          renderActiveFruit(fruit.id);
+          saveGalleryOrder(fruit);
+        }
+      });
+
+      // Left / Right Move Buttons
+      const btnLeft = card.querySelector('.btn-move-left');
+      if (btnLeft) {
+        btnLeft.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const item = fruit.gallery.splice(index, 1)[0];
+          fruit.gallery.splice(index - 1, 0, item);
+          renderActiveFruit(fruit.id);
+          saveGalleryOrder(fruit);
+        });
+      }
+
+      const btnRight = card.querySelector('.btn-move-right');
+      if (btnRight) {
+        btnRight.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const item = fruit.gallery.splice(index, 1)[0];
+          fruit.gallery.splice(index + 1, 0, item);
+          renderActiveFruit(fruit.id);
+          saveGalleryOrder(fruit);
+        });
+      }
+
+      // Set as Main Reference Photo Action
       const btnMain = card.querySelector('.btn-photo-main');
       if (btnMain) {
         btnMain.addEventListener('click', async (e) => {
@@ -140,10 +232,33 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.success) {
               fruit.img = cleanUrl;
               renderActiveFruit(fruit.id);
-              showToast('Foto fijada como Principal de la Ficha Técnica');
+              showToast('Foto fijada como Principal de Referencia');
             }
           } catch (e) {
             showToast('Error al actualizar foto principal', true);
+          }
+        });
+      }
+
+      // Set as Hero Background Action
+      const btnHero = card.querySelector('.btn-photo-hero');
+      if (btnHero) {
+        btnHero.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          try {
+            const res = await fetch('api.php?action=set_hero_bg', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ product_id: fruit.id, image_url: cleanUrl })
+            });
+            const result = await res.json();
+            if (result.success) {
+              fruit.hero_bg = cleanUrl;
+              renderActiveFruit(fruit.id);
+              showToast('Imagen fijada como Fondo de Cabecera (Hero Banner)');
+            }
+          } catch (e) {
+            showToast('Error al actualizar cabecera', true);
           }
         });
       }
@@ -178,6 +293,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Save Gallery Order to Server
+  async function saveGalleryOrder(fruit) {
+    try {
+      const res = await fetch('api.php?action=reorder_gallery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: fruit.id, gallery: fruit.gallery })
+      });
+      const result = await res.json();
+      if (result.success) {
+        showToast('Ubicación y orden de galería guardado en la web');
+      } else {
+        showToast('Error al guardar orden', true);
+      }
+    } catch (e) {
+      showToast('Error de conexión al guardar orden', true);
+    }
+  }
+
   // Bind Fruit Selector Click Events
   document.querySelectorAll('.fruit-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -187,7 +321,68 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 2. TABS NAVIGATION (Sidebar & Sub-Tabs)
+  // 2. HERO BG & MAIN REFERENCE DIRECT UPLOADERS
+  // =========================================================================
+  const btnUploadHeroBg = document.getElementById('btnUploadHeroBg');
+  const heroBgFileInput = document.getElementById('heroBgFileInput');
+  const btnUploadMainImg = document.getElementById('btnUploadMainImg');
+  const mainImgFileInput = document.getElementById('mainImgFileInput');
+
+  if (btnUploadHeroBg && heroBgFileInput) {
+    btnUploadHeroBg.addEventListener('click', () => heroBgFileInput.click());
+    heroBgFileInput.addEventListener('change', async () => {
+      if (heroBgFileInput.files.length > 0) {
+        await handleSpecialUpload(heroBgFileInput.files[0], 'hero_bg');
+        heroBgFileInput.value = '';
+      }
+    });
+  }
+
+  if (btnUploadMainImg && mainImgFileInput) {
+    btnUploadMainImg.addEventListener('click', () => mainImgFileInput.click());
+    mainImgFileInput.addEventListener('change', async () => {
+      if (mainImgFileInput.files.length > 0) {
+        await handleSpecialUpload(mainImgFileInput.files[0], 'reference_img');
+        mainImgFileInput.value = '';
+      }
+    });
+  }
+
+  async function handleSpecialUpload(file, type) {
+    const formData = new FormData();
+    formData.append('product_id', appState.activeFruitId);
+    formData.append('type', type);
+    formData.append('image', file);
+
+    showToast('Subiendo y actualizando imagen...', false);
+
+    try {
+      const res = await fetch('api.php?action=upload_special_image', {
+        method: 'POST',
+        body: formData
+      });
+      const result = await res.json();
+      if (result.success) {
+        const fruit = appState.products.find(p => p.id === appState.activeFruitId);
+        if (fruit) {
+          if (type === 'hero_bg') {
+            fruit.hero_bg = result.image_url;
+          } else {
+            fruit.img = result.image_url;
+          }
+          renderActiveFruit(fruit.id);
+        }
+        showToast(type === 'hero_bg' ? 'Imagen de cabecera actualizada con éxito' : 'Foto principal de referencia actualizada con éxito');
+      } else {
+        showToast(result.error || 'Error al subir', true);
+      }
+    } catch (e) {
+      showToast('Error de conexión al subir imagen especial', true);
+    }
+  }
+
+  // =========================================================================
+  // 3. TABS NAVIGATION (Sidebar & Sub-Tabs)
   // =========================================================================
   document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -220,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 3. FILE UPLOAD (Drag & Drop + Button)
+  // 4. GALLERY FILE UPLOAD (Drag & Drop + Button)
   // =========================================================================
   const dropzone = document.getElementById('uploadDropzone');
   const fileInput = document.getElementById('fileInput');
@@ -282,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
           fruit.gallery = result.gallery;
           renderActiveFruit(fruit.id);
         }
-        showToast('Foto subida, recortada 1:1 y publicada en la web');
+        showToast('Foto subida, recortada 1:1 y agregada a la galería');
       } else {
         showToast(result.error || 'Error al subir fotografía', true);
       }
@@ -293,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 4. PRODUCT SPECS FORM SUBMISSION
+  // 5. PRODUCT SPECS FORM SUBMISSION
   // =========================================================================
   document.getElementById('productSpecsForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -324,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 5. HOME PAGE EDITOR SUBMISSION
+  // 6. HOME PAGE EDITOR SUBMISSION
   // =========================================================================
   document.getElementById('homeEditorForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -392,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 6. NAVIGATION MENU MANAGER
+  // 7. NAVIGATION MENU MANAGER
   // =========================================================================
   function renderMenuEditor() {
     const list = document.getElementById('menuItemsList');
@@ -444,7 +639,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('menuEditorForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Reconstruct menu array
     const updatedMenu = JSON.parse(JSON.stringify(appState.menu));
 
     document.querySelectorAll('.menu-vis-check').forEach(chk => {
@@ -498,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 7. GLOBAL SITE SETTINGS SUBMISSION
+  // 8. GLOBAL SITE SETTINGS SUBMISSION
   // =========================================================================
   document.getElementById('siteSettingsForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -536,7 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 8. QUOTES INBOX & SECURITY
+  // 9. QUOTES INBOX & SECURITY
   // =========================================================================
   async function loadQuotes() {
     const tbody = document.getElementById('quotesTableBody');
@@ -665,7 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 9. INITIAL RENDER
+  // 10. INITIAL RENDER
   // =========================================================================
   renderActiveFruit(appState.activeFruitId);
 });

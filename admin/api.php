@@ -303,6 +303,161 @@ switch ($action) {
         echo json_encode(['success' => true, 'main_image' => $products[$targetIndex]['img']]);
         break;
 
+    case 'set_hero_bg':
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!$data || empty($data['product_id']) || empty($data['image_url'])) {
+            echo json_encode(['success' => false, 'error' => 'Datos incompletos']);
+            exit;
+        }
+
+        $products = get_products_data();
+        $targetIndex = -1;
+        foreach ($products as $idx => $p) {
+            if ($p['id'] === $data['product_id']) {
+                $targetIndex = $idx;
+                break;
+            }
+        }
+
+        if ($targetIndex === -1) {
+            echo json_encode(['success' => false, 'error' => 'Producto no encontrado']);
+            exit;
+        }
+
+        $products[$targetIndex]['hero_bg'] = strtok($data['image_url'], '?');
+        save_products_data($products);
+        $settings = get_site_settings();
+        rebuild_product_page($products[$targetIndex], $settings);
+
+        echo json_encode(['success' => true, 'hero_bg' => $products[$targetIndex]['hero_bg']]);
+        break;
+
+    case 'reorder_gallery':
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!$data || empty($data['product_id']) || !isset($data['gallery']) || !is_array($data['gallery'])) {
+            echo json_encode(['success' => false, 'error' => 'Datos inválidos para reordenar']);
+            exit;
+        }
+
+        $products = get_products_data();
+        $targetIndex = -1;
+        foreach ($products as $idx => $p) {
+            if ($p['id'] === $data['product_id']) {
+                $targetIndex = $idx;
+                break;
+            }
+        }
+
+        if ($targetIndex === -1) {
+            echo json_encode(['success' => false, 'error' => 'Producto no encontrado']);
+            exit;
+        }
+
+        $products[$targetIndex]['gallery'] = array_values($data['gallery']);
+        save_products_data($products);
+        $settings = get_site_settings();
+        rebuild_product_page($products[$targetIndex], $settings);
+
+        echo json_encode(['success' => true, 'gallery' => $products[$targetIndex]['gallery']]);
+        break;
+
+    case 'upload_special_image':
+        if (empty($_FILES['image']) || empty($_POST['product_id']) || empty($_POST['type'])) {
+            echo json_encode(['success' => false, 'error' => 'Parámetros incompletos']);
+            exit;
+        }
+
+        $productId = $_POST['product_id'];
+        $type = $_POST['type']; // 'hero_bg' or 'reference_img'
+        $products = get_products_data();
+        $targetIndex = -1;
+        foreach ($products as $idx => $p) {
+            if ($p['id'] === $productId) {
+                $targetIndex = $idx;
+                break;
+            }
+        }
+
+        if ($targetIndex === -1) {
+            echo json_encode(['success' => false, 'error' => 'Fruta no encontrada']);
+            exit;
+        }
+
+        $file = $_FILES['image'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+            echo json_encode(['success' => false, 'error' => 'Formato no soportado (use JPG, PNG o WebP)']);
+            exit;
+        }
+
+        $rootDir = dirname(__DIR__);
+        $slug = $productId;
+        $targetSubdir = 'assets/images/' . $slug;
+        $targetDir = $rootDir . '/' . $targetSubdir;
+
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0755, true);
+        }
+
+        $prefix = ($type === 'hero_bg') ? 'hero-bg-' : 'reference-';
+        $uniqueName = $slug . '-' . $prefix . time() . '-' . rand(100, 999);
+        $originalFilename = $uniqueName . '.' . ($ext === 'jpeg' ? 'jpg' : $ext);
+        $squareFilename = $uniqueName . '-sq.jpg';
+
+        $destOriginal = $targetDir . '/' . $originalFilename;
+        $destSquare = $targetDir . '/' . $squareFilename;
+
+        if (!move_uploaded_file($file['tmp_name'], $destOriginal)) {
+            echo json_encode(['success' => false, 'error' => 'Error al guardar archivo en el servidor']);
+            exit;
+        }
+
+        // Generate square crop
+        $imgResource = null;
+        if ($ext === 'jpg' || $ext === 'jpeg') {
+            $imgResource = @imagecreatefromjpeg($destOriginal);
+        } elseif ($ext === 'png') {
+            $imgResource = @imagecreatefrompng($destOriginal);
+        } elseif ($ext === 'webp') {
+            $imgResource = @imagecreatefromwebp($destOriginal);
+        }
+
+        if ($imgResource) {
+            $origW = imagesx($imgResource);
+            $origH = imagesy($imgResource);
+            $minDim = min($origW, $origH);
+            $cropX = (int)(($origW - $minDim) / 2);
+            $cropY = (int)(($origH - $minDim) / 2);
+
+            $sqThumb = imagecreatetruecolor(800, 800);
+            imagecopyresampled($sqThumb, $imgResource, 0, 0, $cropX, $cropY, 800, 800, $minDim, $minDim);
+            imagejpeg($sqThumb, $destSquare, 92);
+            imagedestroy($sqThumb);
+            imagedestroy($imgResource);
+        } else {
+            copy($destOriginal, $destSquare);
+        }
+
+        $webPath = $targetSubdir . '/' . $originalFilename;
+
+        if ($type === 'hero_bg') {
+            $products[$targetIndex]['hero_bg'] = $webPath;
+        } else {
+            $products[$targetIndex]['img'] = $webPath;
+        }
+
+        save_products_data($products);
+        $settings = get_site_settings();
+        rebuild_product_page($products[$targetIndex], $settings);
+        rebuild_home_page(get_home_content(), $products, $settings);
+
+        echo json_encode([
+            'success' => true,
+            'image_url' => $webPath,
+            'type' => $type
+        ]);
+        break;
+
     case 'save_site_settings':
         $data = json_decode(file_get_contents('php://input'), true);
         if (!$data) {

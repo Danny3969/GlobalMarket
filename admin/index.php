@@ -33,7 +33,7 @@ $initialPayload = [
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <link rel="stylesheet" href="css/admin.css?v=3">
+  <link rel="stylesheet" href="css/admin.css?v=4">
 </head>
 <body class="admin-body">
 
@@ -103,7 +103,7 @@ $initialPayload = [
           <span class="status-indicator online"></span>
           <span>Servidor Activo (cPanel)</span>
         </div>
-        <small class="version-text">GlobalMarket GM v2.5</small>
+        <small class="version-text">GlobalMarket GM v2.6</small>
       </div>
     </aside>
 
@@ -114,8 +114,8 @@ $initialPayload = [
       <section class="tab-pane active" id="tab-products">
         <div class="pane-header">
           <div>
-            <h2>Gestión de Frutas y Galerías de Fotos</h2>
-            <p>Haz clic en cualquier fruta para ver sus fotos, eliminar, subir nuevas fotos cuadradas 1:1 o editar su ficha técnica.</p>
+            <h2>Gestión de Frutas, Cabeceras y Galerías Arrastrables</h2>
+            <p>Selecciona una fruta para cambiar su foto de cabecera, su foto de referencia, o reordenar y agregar fotos a su galería arrastrándolas.</p>
           </div>
         </div>
 
@@ -152,10 +152,49 @@ $initialPayload = [
             </div>
           </div>
 
+          <!-- SECCIÓN DE CABECERA Y FOTO DE REFERENCIA -->
+          <div class="fruit-special-images-grid">
+            
+            <!-- TARJETA: IMAGEN DE CABECERA (HERO BANNER) -->
+            <div class="special-image-card">
+              <div class="special-image-header">
+                <h4><i class="fa-solid fa-panorama text-gold"></i> Imagen de Cabecera (Hero Banner)</h4>
+                <span class="badge-cms" style="background: rgba(255,255,255,0.1);">Fondo Superior</span>
+              </div>
+              <div class="special-image-preview">
+                <img id="previewHeroBg" src="" alt="Fondo de Cabecera">
+              </div>
+              <div class="special-image-actions">
+                <input type="file" id="heroBgFileInput" accept="image/jpeg,image/png,image/webp" style="display: none;">
+                <button type="button" class="btn btn-primary btn-sm btn-block" id="btnUploadHeroBg">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Cambiar Imagen de Cabecera
+                </button>
+              </div>
+            </div>
+
+            <!-- TARJETA: IMAGEN PRINCIPAL DE REFERENCIA (FICHA TÉCNICA) -->
+            <div class="special-image-card">
+              <div class="special-image-header">
+                <h4><i class="fa-solid fa-star text-gold"></i> Imagen Principal de Referencia</h4>
+                <span class="badge-cms" style="background: rgba(255,255,255,0.1);">Ficha Técnica</span>
+              </div>
+              <div class="special-image-preview">
+                <img id="previewMainImg" src="" alt="Foto Principal">
+              </div>
+              <div class="special-image-actions">
+                <input type="file" id="mainImgFileInput" accept="image/jpeg,image/png,image/webp" style="display: none;">
+                <button type="button" class="btn btn-gold btn-sm btn-block" id="btnUploadMainImg">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Cambiar Foto de Referencia
+                </button>
+              </div>
+            </div>
+
+          </div>
+
           <!-- SUB-TABS: GALERÍA / TEXTOS -->
           <div class="subtabs-bar">
             <button type="button" class="subtab-btn active" data-subtab="gallery">
-              <i class="fa-solid fa-images"></i> Galería de Fotos (<span id="activePhotoCount">0</span>)
+              <i class="fa-solid fa-images"></i> Galería de Fotos (<span id="activePhotoCount">0</span>) - <em>Arrastra para Reordenar</em>
             </button>
             <button type="button" class="subtab-btn" data-subtab="specs">
               <i class="fa-solid fa-file-lines"></i> Ficha Técnica & Textos
@@ -171,14 +210,14 @@ $initialPayload = [
               <div class="dropzone-inner">
                 <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
                 <h4>Arrastra y suelta aquí tus fotografías</h4>
-                <p>O haz clic en el botón de abajo para seleccionar fotos desde tu PC o teléfono (JPG, PNG, WebP)</p>
+                <p>O haz clic en el botón para seleccionar fotos desde tu PC o teléfono (JPG, PNG, WebP)</p>
                 <div class="dropzone-tip">
                   <i class="fa-solid fa-wand-magic-sparkles text-gold"></i>
                   El sistema redimensiona y recorta automáticamente a <strong>formato cuadrado 1:1 (800x800 px)</strong> para mantener la armonía visual.
                 </div>
                 <div>
                   <button type="button" class="btn btn-primary btn-lg" id="btnSelectFiles">
-                    <i class="fa-solid fa-folder-open"></i> Seleccionar Fotografía
+                    <i class="fa-solid fa-folder-open"></i> Subir Nueva Fotografía
                   </button>
                 </div>
               </div>
@@ -188,15 +227,20 @@ $initialPayload = [
               </div>
             </div>
 
-            <!-- CUADRÍCULA DE FOTOS EXISTENTES -->
+            <!-- CUADRÍCULA DE FOTOS ARRASTRABLES Y REORDENABLES -->
             <div class="admin-gallery-wrapper">
               <div class="gallery-toolbar">
-                <h4>Fotografías en la Galería Cuadrada</h4>
-                <small class="text-muted">Pasa el cursor sobre cualquier foto para ver las opciones de eliminar (<i class="fa-solid fa-trash-can text-danger"></i>) o fijar como foto principal (<i class="fa-solid fa-star text-gold"></i>).</small>
+                <div>
+                  <h4>Galería de Imágenes (Arrastra para reordenar la ubicación)</h4>
+                  <small class="text-muted">
+                    <i class="fa-solid fa-arrows-up-down-left-right text-gold"></i> 
+                    <strong>Arrastra y suelta</strong> cualquier tarjeta para cambiarla de orden, o usa las flechas <i class="fa-solid fa-chevron-left"></i> / <i class="fa-solid fa-chevron-right"></i>.
+                  </small>
+                </div>
               </div>
 
               <div class="admin-gallery-grid" id="adminGalleryGrid">
-                <!-- Se llena dinámicamente -->
+                <!-- Se llena dinámicamente con JS con soporte Drag & Drop -->
               </div>
             </div>
 
@@ -600,6 +644,6 @@ $initialPayload = [
   <script>
     window.INITIAL_DATA = <?= json_encode($initialPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
   </script>
-  <script src="js/admin.js?v=3"></script>
+  <script src="js/admin.js?v=4"></script>
 </body>
 </html>

@@ -121,6 +121,7 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
     }
     
     $cleanMainImg = strtok($p['img'], '?') . '?v=' . time();
+    $cleanHeroBg = strtok(!empty($p['hero_bg']) ? $p['hero_bg'] : $p['img'], '?') . '?v=' . time();
     $companyDesc = !empty($settings['company_desc']) ? $settings['company_desc'] : 'Empresa exportadora ecuatoriana líder en frutas exóticas y tradicionales de calidad premium.';
     $fbUrl = !empty($settings['social']['facebook']) ? $settings['social']['facebook'] : '#';
     $igUrl = !empty($settings['social']['instagram']) ? $settings['social']['instagram'] : '#';
@@ -202,7 +203,7 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
   </header>
 
   <!-- PRODUCT HERO HEADER CON IMAGEN -->
-  <section class="product-hero {$pHeroClass}">
+  <section class="product-hero {$pHeroClass}" style="background-image: linear-gradient(180deg, rgba(6, 21, 15, 0.72) 0%, rgba(6, 21, 15, 0.92) 100%), url('{$cleanHeroBg}'); background-size: cover; background-position: center;">
     <div class="container">
       <div class="breadcrumbs">
         <a href="index.html">Inicio</a>
