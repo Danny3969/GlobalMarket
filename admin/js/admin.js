@@ -1,13 +1,17 @@
-// GlobalMarket GM - Admin Console Logic
+// GlobalMarket GM - Complete Admin Console Controller
 document.addEventListener('DOMContentLoaded', () => {
+  // State Initialization
+  const rawInitial = window.INITIAL_DATA || {};
   let appState = {
-    products: [],
-    settings: {},
-    activeFruitId: 'banano',
-    quotes: []
+    products: rawInitial.products || [],
+    settings: rawInitial.settings || {},
+    home: rawInitial.home || {},
+    menu: rawInitial.menu || [],
+    quotes: rawInitial.quotes || [],
+    activeFruitId: 'banano'
   };
 
-  // Toast Helper
+  // Toast Notification Helper
   function showToast(message, isError = false) {
     const toast = document.getElementById('adminToast');
     const toastMsg = document.getElementById('toastMessage');
@@ -28,44 +32,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3500);
   }
 
-  // Load Initial Data
-  async function loadInitialData() {
-    try {
-      const res = await fetch('api.php?action=get_data');
-      const data = await res.json();
-      if (data.success) {
-        appState.products = data.products;
-        appState.settings = data.settings;
-        renderActiveFruit(appState.activeFruitId);
-      }
-    } catch (err) {
-      console.error('Error cargando datos:', err);
-    }
-  }
-
-  // Render Active Fruit
+  // =========================================================================
+  // 1. RENDER ACTIVE FRUIT & GALLERY
+  // =========================================================================
   function renderActiveFruit(fruitId) {
     const fruit = appState.products.find(p => p.id === fruitId);
     if (!fruit) return;
 
     appState.activeFruitId = fruitId;
 
-    // Update Header
+    // Header & Meta
     document.getElementById('currentFruitTitle').textContent = fruit.name_es;
     document.getElementById('currentFruitScientific').textContent = fruit.scientific;
     document.getElementById('btnPreviewFruit').href = `../${fruit.file}`;
     document.getElementById('specFruitId').value = fruit.id;
 
-    // Update Counts
+    // Photo count
     const photoCount = (fruit.gallery || []).length;
     document.getElementById('activePhotoCount').textContent = photoCount;
+    
+    const countBadge = document.getElementById(`countBadge_${fruit.id}`);
+    if (countBadge) {
+      countBadge.innerHTML = `<i class="fa-solid fa-images"></i> ${photoCount} fotos`;
+    }
 
-    // Update Selector Cards active class
+    // Update active state on fruit cards
     document.querySelectorAll('.fruit-card').forEach(card => {
       card.classList.toggle('active', card.getAttribute('data-fruit-id') === fruitId);
     });
 
-    // Render Gallery Grid
+    // Render Gallery
     renderGalleryGrid(fruit);
 
     // Populate Specs Form
@@ -84,14 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('specCerts').value = fruit.certs_es || '';
   }
 
-  // Render Gallery Grid
   function renderGalleryGrid(fruit) {
     const grid = document.getElementById('adminGalleryGrid');
     grid.innerHTML = '';
 
     const gallery = fruit.gallery || [];
     if (gallery.length === 0) {
-      grid.innerHTML = '<p class="text-muted" style="grid-column: 1/-1; padding: 2rem 0; text-align: center;">No hay fotos en esta galería. Sube la primera fotografía arriba.</p>';
+      grid.innerHTML = '<div style="grid-column: 1/-1; padding: 3rem 1rem; text-align: center; color: var(--text-muted);"><i class="fa-regular fa-image" style="font-size: 2.5rem; margin-bottom: 0.75rem; display: block; opacity: 0.4;"></i>No hay fotos en esta galería todavía. Sube fotografías arrastrándolas arriba o con el botón "Seleccionar Fotografía".</div>';
       return;
     }
 
@@ -101,12 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const cleanUrl = imgUrl.split('?')[0];
       const isMain = cleanUrl === cleanMainImg;
       
-      // Determine square thumb url
+      // Compute 1:1 square thumb URL
       let sqUrl = cleanUrl;
       if (!cleanUrl.includes('-sq.')) {
         const lastDot = cleanUrl.lastIndexOf('.');
         if (lastDot !== -1) {
-          sqUrl = cleanUrl.substring(0, lastDot) + '-sq' + cleanUrl.substring(lastDot);
+          sqUrl = cleanUrl.substring(0, lastDot) + '-sq.jpg';
         }
       }
 
@@ -114,10 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
       card.className = 'admin-photo-card';
       card.innerHTML = `
         ${isMain ? '<span class="photo-badge-main"><i class="fa-solid fa-star"></i> Foto Principal</span>' : ''}
-        <img src="../${sqUrl}?v=${Date.now()}" alt="${fruit.name_es}">
+        <img src="../${sqUrl}?v=${Date.now()}" alt="${fruit.name_es}" onerror="this.src='../${cleanUrl}'">
         <div class="photo-actions-overlay">
+          <a href="../${cleanUrl}" target="_blank" class="btn-photo-action" style="background: rgba(255,255,255,0.2); color: #fff;" title="Ver en alta resolución">
+            <i class="fa-solid fa-up-right-and-down-left-and-up-right-to-center"></i>
+          </a>
           ${!isMain ? `
-            <button type="button" class="btn-photo-action btn-photo-main" title="Fijar como Foto Principal" data-url="${cleanUrl}">
+            <button type="button" class="btn-photo-action btn-photo-main" title="Fijar como Foto Principal de la Ficha" data-url="${cleanUrl}">
               <i class="fa-regular fa-star"></i>
             </button>
           ` : ''}
@@ -127,10 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
 
-      // Event: Set Main Photo
+      // Set as Main Photo Action
       const btnMain = card.querySelector('.btn-photo-main');
       if (btnMain) {
-        btnMain.addEventListener('click', async () => {
+        btnMain.addEventListener('click', async (e) => {
+          e.stopPropagation();
           try {
             const res = await fetch('api.php?action=set_main_image', {
               method: 'POST',
@@ -141,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.success) {
               fruit.img = cleanUrl;
               renderActiveFruit(fruit.id);
-              showToast('Foto principal actualizada correctamente');
+              showToast('Foto fijada como Principal de la Ficha Técnica');
             }
           } catch (e) {
             showToast('Error al actualizar foto principal', true);
@@ -149,10 +148,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // Event: Delete Photo
+      // Delete Photo Action
       const btnDel = card.querySelector('.btn-photo-delete');
       if (btnDel) {
-        btnDel.addEventListener('click', async () => {
+        btnDel.addEventListener('click', async (e) => {
+          e.stopPropagation();
           if (!confirm('¿Seguro que deseas eliminar esta fotografía de la galería?')) return;
           try {
             const res = await fetch('api.php?action=delete_image', {
@@ -165,9 +165,11 @@ document.addEventListener('DOMContentLoaded', () => {
               fruit.gallery = result.gallery;
               renderActiveFruit(fruit.id);
               showToast('Fotografía eliminada con éxito');
+            } else {
+              showToast(result.error || 'Error al eliminar', true);
             }
           } catch (e) {
-            showToast('Error al eliminar fotografía', true);
+            showToast('Error de conexión al eliminar foto', true);
           }
         });
       }
@@ -176,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Fruit Selector Clicks
+  // Bind Fruit Selector Click Events
   document.querySelectorAll('.fruit-card').forEach(card => {
     card.addEventListener('click', () => {
       const fId = card.getAttribute('data-fruit-id');
@@ -184,7 +186,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Sidebar Tabs Navigation
+  // =========================================================================
+  // 2. TABS NAVIGATION (Sidebar & Sub-Tabs)
+  // =========================================================================
   document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
     btn.addEventListener('click', () => {
       const tabId = btn.getAttribute('data-tab');
@@ -197,11 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (tabId === 'quotes') {
         loadQuotes();
+      } else if (tabId === 'menu') {
+        renderMenuEditor();
       }
     });
   });
 
-  // Sub-Tabs Navigation (Gallery / Specs)
   document.querySelectorAll('.subtab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const subtabId = btn.getAttribute('data-subtab');
@@ -214,10 +219,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Drag & Drop File Upload
+  // =========================================================================
+  // 3. FILE UPLOAD (Drag & Drop + Button)
+  // =========================================================================
   const dropzone = document.getElementById('uploadDropzone');
   const fileInput = document.getElementById('fileInput');
+  const btnSelectFiles = document.getElementById('btnSelectFiles');
   const uploadProgress = document.getElementById('uploadProgress');
+
+  if (btnSelectFiles) {
+    btnSelectFiles.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+  }
 
   ['dragenter', 'dragover'].forEach(eventName => {
     dropzone.addEventListener(eventName, (e) => {
@@ -269,15 +284,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         showToast('Foto subida, recortada 1:1 y publicada en la web');
       } else {
-        showToast(result.error || 'Error al subir imagen', true);
+        showToast(result.error || 'Error al subir fotografía', true);
       }
     } catch (e) {
       uploadProgress.style.display = 'none';
-      showToast('Error de conexión al subir imagen', true);
+      showToast('Error de conexión al subir fotografía', true);
     }
   }
 
-  // Save Product Specs Form
+  // =========================================================================
+  // 4. PRODUCT SPECS FORM SUBMISSION
+  // =========================================================================
   document.getElementById('productSpecsForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -292,7 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const result = await res.json();
       if (result.success) {
-        // Update local state
         const fruit = appState.products.find(p => p.id === data.product_id);
         if (fruit) {
           Object.assign(fruit, data);
@@ -307,7 +323,183 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Save Site Settings Form
+  // =========================================================================
+  // 5. HOME PAGE EDITOR SUBMISSION
+  // =========================================================================
+  document.getElementById('homeEditorForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const homeData = {
+      hero: {
+        badge: document.getElementById('heroBadge').value.trim(),
+        title: document.getElementById('heroTitle').value.trim(),
+        desc: document.getElementById('heroDesc').value.trim(),
+        btn_explore: 'Explorar Catálogo',
+        btn_quote: 'Cotizador B2B',
+        btn_whatsapp: 'WhatsApp Directo',
+        bg_image: appState.home.hero?.bg_image || 'assets/images/hero-banner.jpg',
+        stats: [
+          { num: document.getElementById('statNum_0').value.trim(), label: document.getElementById('statLbl_0').value.trim() },
+          { num: document.getElementById('statNum_1').value.trim(), label: document.getElementById('statLbl_1').value.trim() },
+          { num: document.getElementById('statNum_2').value.trim(), label: document.getElementById('statLbl_2').value.trim() },
+          { num: document.getElementById('statNum_3').value.trim(), label: document.getElementById('statLbl_3').value.trim() }
+        ]
+      },
+      about: {
+        tag: document.getElementById('aboutTag').value.trim(),
+        title: document.getElementById('aboutTitle').value.trim(),
+        p1: document.getElementById('aboutP1').value.trim(),
+        p2: document.getElementById('aboutP2').value.trim(),
+        badge_title: document.getElementById('aboutBadgeTitle').value.trim(),
+        badge_sub: document.getElementById('aboutBadgeSub').value.trim(),
+        image: appState.home.about?.image || 'assets/images/hero-banner.jpg'
+      },
+      certs: {
+        tag: document.getElementById('certsTag').value.trim(),
+        title: document.getElementById('certsTitle').value.trim(),
+        desc: document.getElementById('certsDesc').value.trim(),
+        items: appState.home.certs?.items || []
+      },
+      logistics: {
+        tag: document.getElementById('logisticsTag').value.trim(),
+        title: document.getElementById('logisticsTitle').value.trim(),
+        desc: document.getElementById('logisticsDesc').value.trim(),
+        image: appState.home.logistics?.image || 'assets/images/logistica.jpg',
+        steps: appState.home.logistics?.steps || []
+      },
+      footer: {
+        about_text: document.getElementById('footerAbout').value.trim(),
+        copyright: document.getElementById('footerCopyright').value.trim()
+      }
+    };
+
+    try {
+      const res = await fetch('api.php?action=save_home_content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(homeData)
+      });
+      const result = await res.json();
+      if (result.success) {
+        appState.home = homeData;
+        showToast('Página de Inicio actualizada y publicada');
+      } else {
+        showToast(result.error || 'Error al guardar portada', true);
+      }
+    } catch (e) {
+      showToast('Error de conexión', true);
+    }
+  });
+
+  // =========================================================================
+  // 6. NAVIGATION MENU MANAGER
+  // =========================================================================
+  function renderMenuEditor() {
+    const list = document.getElementById('menuItemsList');
+    list.innerHTML = '';
+
+    appState.menu.forEach((item, index) => {
+      const isChecked = item.visible !== false ? 'checked' : '';
+      const row = document.createElement('div');
+      row.className = 'menu-item-row';
+      row.style.background = 'rgba(0,0,0,0.3)';
+      row.style.border = '1px solid var(--admin-card-border)';
+      row.style.borderRadius = 'var(--radius-sm)';
+      row.style.padding = '1.25rem';
+      row.style.marginBottom = '1rem';
+
+      let submenuHtml = '';
+      if (item.has_submenu && item.submenu && item.submenu.length > 0) {
+        submenuHtml = `<div style="margin-top: 1rem; padding-left: 1.5rem; border-left: 2px solid var(--gold-accent);">
+          <h5 style="color: var(--gold-light); margin-bottom: 0.75rem;"><i class="fa-solid fa-list-ul"></i> Submenú de Frutas (${item.submenu.length} Frutas):</h5>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            ${item.submenu.map((sub, sIdx) => `
+              <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.03); padding: 0.5rem 0.75rem; border-radius: 6px;">
+                <input type="checkbox" id="sub_vis_${index}_${sIdx}" ${sub.visible !== false ? 'checked' : ''} data-item-idx="${index}" data-sub-idx="${sIdx}" class="sub-menu-vis">
+                <input type="text" id="sub_lbl_${index}_${sIdx}" value="${sub.label}" class="form-control form-control-sm" style="flex: 1;" data-item-idx="${index}" data-sub-idx="${sIdx}">
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+      }
+
+      row.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1;">
+            <label class="switch-pill" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #fff;">
+              <input type="checkbox" class="menu-vis-check" data-index="${index}" ${isChecked}>
+              <span>${isChecked ? 'Visible' : 'Oculto'}</span>
+            </label>
+            <input type="text" class="form-control menu-lbl-input" data-index="${index}" value="${item.label}" style="max-width: 260px;">
+            <input type="text" class="form-control menu-url-input" data-index="${index}" value="${item.url}" style="flex: 1; color: var(--text-muted);">
+          </div>
+        </div>
+        ${submenuHtml}
+      `;
+
+      list.appendChild(row);
+    });
+  }
+
+  document.getElementById('menuEditorForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Reconstruct menu array
+    const updatedMenu = JSON.parse(JSON.stringify(appState.menu));
+
+    document.querySelectorAll('.menu-vis-check').forEach(chk => {
+      const idx = parseInt(chk.getAttribute('data-index'));
+      updatedMenu[idx].visible = chk.checked;
+    });
+
+    document.querySelectorAll('.menu-lbl-input').forEach(inp => {
+      const idx = parseInt(inp.getAttribute('data-index'));
+      updatedMenu[idx].label = inp.value.trim();
+    });
+
+    document.querySelectorAll('.menu-url-input').forEach(inp => {
+      const idx = parseInt(inp.getAttribute('data-index'));
+      updatedMenu[idx].url = inp.value.trim();
+    });
+
+    // Submenus
+    document.querySelectorAll('.sub-menu-vis').forEach(chk => {
+      const iIdx = parseInt(chk.getAttribute('data-item-idx'));
+      const sIdx = parseInt(chk.getAttribute('data-sub-idx'));
+      if (updatedMenu[iIdx] && updatedMenu[iIdx].submenu && updatedMenu[iIdx].submenu[sIdx]) {
+        updatedMenu[iIdx].submenu[sIdx].visible = chk.checked;
+      }
+    });
+
+    document.querySelectorAll('[id^="sub_lbl_"]').forEach(inp => {
+      const iIdx = parseInt(inp.getAttribute('data-item-idx'));
+      const sIdx = parseInt(inp.getAttribute('data-sub-idx'));
+      if (updatedMenu[iIdx] && updatedMenu[iIdx].submenu && updatedMenu[iIdx].submenu[sIdx]) {
+        updatedMenu[iIdx].submenu[sIdx].label = inp.value.trim();
+      }
+    });
+
+    try {
+      const res = await fetch('api.php?action=save_menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedMenu)
+      });
+      const result = await res.json();
+      if (result.success) {
+        appState.menu = updatedMenu;
+        showToast('Menú de navegación actualizado en toda la web');
+      } else {
+        showToast(result.error || 'Error al guardar menú', true);
+      }
+    } catch (e) {
+      showToast('Error de conexión', true);
+    }
+  });
+
+  // =========================================================================
+  // 7. GLOBAL SITE SETTINGS SUBMISSION
+  // =========================================================================
   document.getElementById('siteSettingsForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -333,7 +525,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const result = await res.json();
       if (result.success) {
-        showToast('Ajustes generales actualizados con éxito');
+        appState.settings = data;
+        showToast('Ajustes generales actualizados en toda la web');
       } else {
         showToast(result.error || 'Error al guardar ajustes', true);
       }
@@ -342,7 +535,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Load Quotes
+  // =========================================================================
+  // 8. QUOTES INBOX & SECURITY
+  // =========================================================================
   async function loadQuotes() {
     const tbody = document.getElementById('quotesTableBody');
     const emptyState = document.getElementById('quotesEmptyState');
@@ -415,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btnRefreshQuotes').addEventListener('click', loadQuotes);
 
-  // Change Password Form
+  // Change Password
   document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const currentPassword = document.getElementById('currentPassword').value;
@@ -445,7 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Rebuild All Button
+  // Rebuild All Site
   document.getElementById('btnRebuildAll').addEventListener('click', async () => {
     const btn = document.getElementById('btnRebuildAll');
     btn.disabled = true;
@@ -469,6 +664,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Initial Load
-  loadInitialData();
+  // =========================================================================
+  // 9. INITIAL RENDER
+  // =========================================================================
+  renderActiveFruit(appState.activeFruitId);
 });

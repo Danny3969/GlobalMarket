@@ -1,0 +1,97 @@
+{
+  "hero": {
+    "badge": "Frutas Tropicales Premium de Exportación",
+    "title": "Llevamos la Frescura y Sabor del Trópico a los Mercados del Mundo",
+    "desc": "Productores y exportadores líderes de Banano Cavendish, Plátano, Pitahaya Roja, Pitahaya Amarilla, Malanga, Maracuyá, Piña y Mango. Estrictos estándares fitosanitarios, trazabilidad completa y cadena de frío ininterrumpida.",
+    "btn_explore": "Explorar Catálogo",
+    "btn_quote": "Cotizador B2B",
+    "btn_whatsapp": "WhatsApp Directo",
+    "bg_image": "assets/images/hero-banner.jpg",
+    "stats": [
+      {
+        "num": "+15",
+        "label": "Países Destino"
+      },
+      {
+        "num": "100%",
+        "label": "Cadena de Frío Controlada"
+      },
+      {
+        "num": "+500",
+        "label": "Hectáreas de Cultivo"
+      },
+      {
+        "num": "GlobalGAP",
+        "label": "Estándar Internacional"
+      }
+    ]
+  },
+  "about": {
+    "tag": "Quiénes Somos",
+    "title": "Compromiso con la Excelencia Agrícola y la Frescura Internacional",
+    "p1": "En Global Market GM somos apasionados por cultivar, seleccionar y exportar lo mejor del agro tropical hacia compradores mayoristas, supermercados e importadores en Estados Unidos, Europa, Asia y Medio Oriente.",
+    "p2": "Nuestras fincas aliadas y propias en los valles más privilegiados de Ecuador garantizan un fruto con nutrientes excepcionales, dulzura natural (grados Brix óptimos) y una vida útil prolongada en anaquel gracias a rigurosos procesos de postcosecha.",
+    "badge_title": "Agricultura Sostenible",
+    "badge_sub": "Prácticas orgánicas y eco-amigables",
+    "image": "assets/images/hero-banner.jpg"
+  },
+  "certs": {
+    "tag": "Garantía de Calidad",
+    "title": "Certificaciones de Clase Mundial",
+    "desc": "Cumplimos con las normativas fitosanitarias, ambientales y de seguridad logística más exigentes del comercio exterior.",
+    "items": [
+      {
+        "icon": "fa-shield-halved",
+        "title": "GlobalG.A.P. IFA",
+        "desc": "Buenas prácticas agrícolas, inocuidad alimentaria y trazabilidad completa de cada lote exportado."
+      },
+      {
+        "icon": "fa-lock",
+        "title": "Certificación BASC",
+        "desc": "Seguridad en la cadena logística internacional y prevención de riesgos en transporte de carga."
+      },
+      {
+        "icon": "fa-frog",
+        "title": "Rainforest Alliance",
+        "desc": "Cultivos sostenibles con protección de la biodiversidad y bienestar de las comunidades agrícolas."
+      },
+      {
+        "icon": "fa-award",
+        "title": "AGROCALIDAD Ecuador",
+        "desc": "Certificación fitosanitaria oficial que autoriza el libre tránsito en aduanas globales."
+      }
+    ]
+  },
+  "logistics": {
+    "tag": "Operaciones & Cadena de Frío",
+    "title": "Logística Integral sin Interrupciones",
+    "desc": "Desde el corte en árbol hasta el arribo en puerto de destino, aseguramos condiciones atmosféricas perfectas.",
+    "image": "assets/images/logistica.jpg",
+    "steps": [
+      {
+        "num": "01",
+        "title": "Cosecha & Selección Óptima",
+        "desc": "Corte en grado exacto de madurez, desleche y lavado en empacadoras certificadas."
+      },
+      {
+        "num": "02",
+        "title": "Empaque Especializado & Palletizado",
+        "desc": "Cajas de cartón corrugado de alta resistencia con fundas de atmósfera modificada."
+      },
+      {
+        "num": "03",
+        "title": "Pre-Frío & Monitoreo Digital",
+        "desc": "Enfriamiento rápido a temperatura controlada y termógrafos digitales con GPS en contenedor."
+      },
+      {
+        "num": "04",
+        "title": "Embarque Marítimo & Aéreo Express",
+        "desc": "Despachos semanales regulares desde Puerto de Guayaquil y aeropuertos UIO/GYE."
+      }
+    ]
+  },
+  "footer": {
+    "about_text": "Empresa exportadora ecuatoriana líder en frutas exóticas y tradicionales de calidad premium. Conectamos la fertilidad de nuestra tierra con los mercados más exigentes del mundo.",
+    "copyright": "© 2026 GlobalMarket GM Cía. Ltda. Todos los derechos reservados."
+  }
+}

@@ -1,0 +1,82 @@
+[
+  {
+    "id": "home",
+    "label": "Inicio",
+    "url": "index.html#inicio",
+    "visible": true
+  },
+  {
+    "id": "about",
+    "label": "Quiénes Somos",
+    "url": "index.html#nosotros",
+    "visible": true
+  },
+  {
+    "id": "products",
+    "label": "Productos",
+    "url": "index.html#productos",
+    "visible": true,
+    "has_submenu": true,
+    "submenu": [
+      {
+        "label": "Banano Cavendish",
+        "url": "banano.html",
+        "visible": true
+      },
+      {
+        "label": "Plátano Verde / Barraganete",
+        "url": "platano.html",
+        "visible": true
+      },
+      {
+        "label": "Pitahaya Roja (Red Dragon)",
+        "url": "pitahaya-roja.html",
+        "visible": true
+      },
+      {
+        "label": "Pitahaya Amarilla de Palora",
+        "url": "pitahaya-amarilla.html",
+        "visible": true
+      },
+      {
+        "label": "Malanga / Taro Root",
+        "url": "malanga.html",
+        "visible": true
+      },
+      {
+        "label": "Maracuyá (Passion Fruit)",
+        "url": "maracuya.html",
+        "visible": true
+      },
+      {
+        "label": "Piña Golden MD2",
+        "url": "pina.html",
+        "visible": true
+      },
+      {
+        "label": "Mango de Exportación",
+        "url": "mango.html",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "certs",
+    "label": "Certificaciones",
+    "url": "index.html#certificaciones",
+    "visible": true
+  },
+  {
+    "id": "logistics",
+    "label": "Logística",
+    "url": "index.html#logistica",
+    "visible": true
+  },
+  {
+    "id": "quote",
+    "label": "Cotizar Ahora",
+    "url": "index.html#cotizador",
+    "visible": true,
+    "is_cta": true
+  }
+]
