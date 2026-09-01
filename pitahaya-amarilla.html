@@ -95,7 +95,7 @@
         <!-- LEFT: IMAGEN HD & NUTRICIÓN -->
         <div>
           <div class="detail-gallery-box">
-            <img src="assets/images/pitahaya-amarilla.jpg?v=4" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="detail-main-img">
+            <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-empaque-caja.jpg?v=5" alt="Pitahaya Amarilla de Palora (Yellow Dragon)" class="detail-main-img">
             <div style="padding: 1.25rem; background: #FFFFFF; display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <strong style="color: var(--primary-dark); font-size: 1.05rem;"><i class="fa-solid fa-location-dot text-primary"></i> Origen:</strong>
@@ -205,6 +205,89 @@
       </div>
     </div>
   </section>
+
+  <!-- SECCIÓN DE GALERÍA DE FOTOS (CUADRÍCULA UNIFORME 1:1) -->
+  <section class="gallery-section" id="galeria">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag">Galería de Imágenes</div>
+        <h2 class="section-title">Pitahaya Yellow Dragon</h2>
+        <p class="section-subtitle">
+          Catálogo visual de exportación. Haz clic sobre cualquier fotografía para verla en alta definición.
+        </p>
+      </div>
+
+      <!-- GRID UNIFORME 1:1 (FOTOGRAFÍAS REALES) -->
+      <div class="gallery-grid" id="galleryGrid">
+        
+        <!-- FOTO 1 (Caja de exportación con 6 frutos selectos) -->
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-empaque-caja.jpg?v=5">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-empaque-caja-sq.jpg?v=5" alt="Pitahaya Amarilla" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- FOTO 2 (Frutos dorados madurando en tallo) -->
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-frutos-tallo.jpg?v=5">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-frutos-tallo-sq.jpg?v=5" alt="Pitahaya Amarilla" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- FOTO 3 (Plantación en colina con espalderas y paisaje) -->
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-campo-paisaje.jpg?v=5">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-campo-paisaje-sq.jpg?v=5" alt="Pitahaya Amarilla" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- FOTO 4 (Floración abierta espectacular) -->
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-floracion-abierta.jpg?v=5">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-floracion-abierta-sq.jpg?v=5" alt="Pitahaya Amarilla" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- FOTO 5 (Planta frondosa con botones colgantes) -->
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-planta-frondosa.jpg?v=5">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-planta-frondosa-sq.jpg?v=5" alt="Pitahaya Amarilla" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+        <!-- FOTO 6 (Frutas frescas y corte jugoso) -->
+        <div class="gallery-card" data-src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruta-fresca.jpg?v=5">
+          <img src="assets/images/pitahaya-amarilla/pitahaya-amarilla-fruta-fresca-sq.jpg?v=5" alt="Pitahaya Amarilla" class="gallery-thumb" loading="lazy">
+          <div class="gallery-overlay">
+            <div class="gallery-overlay-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- LIGHTBOX MODAL PARA VER FOTOS EN PANTALLA COMPLETA -->
+  <div class="lightbox-modal" id="lightboxModal">
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    <button type="button" class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+    <button type="button" class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+    
+    <div class="lightbox-dialog">
+      <div class="lightbox-img-wrapper">
+        <img src="" alt="Vista ampliada" class="lightbox-img" id="lightboxImg">
+      </div>
+      <div class="lightbox-footer">
+        <p class="lightbox-caption" id="lightboxCaption"></p>
+        <span class="lightbox-counter" id="lightboxCounter">1 / 1</span>
+      </div>
+    </div>
+  </div>
 
   <!-- COTIZADOR DEDICADO PARA ESTE PRODUCTO -->
   <section class="section-padding" id="cotizador-producto" style="background: var(--bg-dark); color: #FFFFFF;">
