@@ -753,6 +753,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const waNumber = '593999999999';
       const msg = buildWhatsAppMessage();
 
+      // Guardar cotización en la consola de administración
+      const prodSelect = document.getElementById('quoteProduct');
+      const prodText = prodSelect ? prodSelect.options[prodSelect.selectedIndex]?.text : 'General';
+      const payload = {
+        product: prodText,
+        client_name: document.getElementById('clientName')?.value.trim() || '',
+        email: document.getElementById('clientEmail')?.value.trim() || '',
+        phone: document.getElementById('clientPhone')?.value.trim() || '',
+        destination: document.getElementById('destinationCountry')?.value.trim() || '',
+        volume: document.getElementById('shippingVolume')?.value || '',
+        incoterm: document.getElementById('incoterm')?.value || 'CIF',
+        message: document.getElementById('clientMessage')?.value.trim() || ''
+      };
+
+      fetch('admin/api.php?action=submit_quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(err => console.log('Admin quote sync:', err));
+
       if (quoteAlert) {
         quoteAlert.classList.add('show');
         setTimeout(() => {
@@ -776,8 +796,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const clientPhone = document.getElementById('pClientPhone')?.value.trim() || '';
       const dest = document.getElementById('pDestCountry')?.value.trim() || 'Puerto Internacional';
       const volume = document.getElementById('pVolume')?.value || '1 Contenedor FCL';
-      const incoterm = document.getElementById('pIncoterm')?.value || 'FOB';
-      const notes = document.getElementById('pComments')?.value.trim() || 'Ninguna';
+      const incoterm = document.getElementById('pIncoterm')?.value || 'CIF';
+      const notes = document.getElementById('pMessage')?.value.trim() || '';
+
+      // Guardar cotización en la consola de administración
+      const payload = {
+        product: prodName,
+        client_name: clientName,
+        email: clientEmail,
+        phone: clientPhone,
+        destination: dest,
+        volume: volume,
+        incoterm: incoterm,
+        message: notes
+      };
+
+      fetch('admin/api.php?action=submit_quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(err => console.log('Admin quote sync:', err));
 
       const text = `👋 *SOLICITUD DE COTIZACIÓN - GLOBAL MARKET GM*\n\n` +
         `🍎 *Producto Solicitado:* ${prodName}\n` +
@@ -787,7 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `📦 *Volumen:* ${volume}\n` +
         `🌍 *Destino:* ${dest}\n` +
         `📋 *Incoterm:* ${incoterm}\n` +
-        `📝 *Especificaciones:* ${notes}\n\n` +
+        `📝 *Especificaciones:* ${notes || 'Estándar'}\n\n` +
         `_Enviado desde la página oficial del producto en globalmarket-gm.com_`;
 
       window.open(`https://wa.me/593999999999?text=${encodeURIComponent(text)}`, '_blank');

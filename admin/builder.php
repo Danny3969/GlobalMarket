@@ -1,0 +1,458 @@
+<?php
+// GlobalMarket GM - Site Compiler & HTML Rebuild Engine
+if (!defined('GM_ADMIN_INIT')) {
+    define('GM_ADMIN_INIT', true);
+}
+
+function get_products_data() {
+    $file = __DIR__ . '/data/products.json';
+    if (!file_exists($file)) return [];
+    return json_decode(file_get_contents($file), true) ?: [];
+}
+
+function get_site_settings() {
+    $file = __DIR__ . '/data/site_settings.json';
+    if (!file_exists($file)) return [];
+    return json_decode(file_get_contents($file), true) ?: [];
+}
+
+function save_products_data($data) {
+    $file = __DIR__ . '/data/products.json';
+    return file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+}
+
+function save_site_settings($data) {
+    $file = __DIR__ . '/data/site_settings.json';
+    return file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+}
+
+function render_gallery_html($gallery, $fruitName) {
+    if (empty($gallery)) return '';
+    $html = '';
+    $i = 1;
+    foreach ($gallery as $imgUrl) {
+        $cleanUrl = strtok($imgUrl, '?');
+        // Generate square thumb path
+        if (strpos($cleanUrl, '-sq.') === false) {
+            $pathInfo = pathinfo($cleanUrl);
+            $sqUrl = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '-sq.' . $pathInfo['extension'];
+        } else {
+            $sqUrl = $cleanUrl;
+        }
+        $v = time();
+        $html .= "        <!-- FOTO {$i} -->\n";
+        $html .= "        <div class=\"gallery-card\" data-src=\"{$cleanUrl}?v={$v}\">\n";
+        $html .= "          <img src=\"{$sqUrl}?v={$v}\" alt=\"{$fruitName}\" class=\"gallery-thumb\" loading=\"lazy\">\n";
+        $html .= "          <div class=\"gallery-overlay\">\n";
+        $html .= "            <div class=\"gallery-overlay-icon\"><i class=\"fa-solid fa-magnifying-glass-plus\"></i></div>\n";
+        $html .= "          </div>\n";
+        $html .= "        </div>\n\n";
+        $i++;
+    }
+    return $html;
+}
+
+function rebuild_product_page($p, $settings) {
+    $rootDir = dirname(__DIR__);
+    $filePath = $rootDir . '/' . $p['file'];
+    
+    $galleryHtml = render_gallery_html($p['gallery'] ?? [], $p['name_es']);
+    
+    $nutriHtml = '';
+    if (!empty($p['nutri'])) {
+        foreach ($p['nutri'] as $n) {
+            $nutriHtml .= "            <div class=\"nutrition-card\">\n";
+            $nutriHtml .= "              <div class=\"nutri-icon\"><i class=\"fa-solid {$n['icon']}\"></i></div>\n";
+            $nutriHtml .= "              <h4 data-i18n=\"{$p['id']}_nutri_{$n['icon']}_title\">{$n['title_es']}</h4>\n";
+            $nutriHtml .= "              <p data-i18n=\"{$p['id']}_nutri_{$n['icon']}_desc\">{$n['desc_es']}</p>\n";
+            $nutriHtml .= "            </div>\n";
+        }
+    }
+    
+    $cleanMainImg = strtok($p['img'], '?') . '?v=' . time();
+    
+    $content = <<<HTML
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{$p['name_es']} | Exportación Global Market GM</title>
+  <meta name="description" content="{$p['tagline_es']} Ficha técnica, calibres, empaque y cotización B2B.">
+  <link rel="icon" type="image/png" href="assets/images/favicon.png?v=3">
+
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css?v=6">
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-contact">
+        <a href="tel:{$settings['phone']}"><i class="fa-solid fa-phone"></i> {$settings['phone']}</a>
+        <a href="mailto:{$settings['email']}"><i class="fa-solid fa-envelope"></i> {$settings['email']}</a>
+        <span class="top-bar-badge"><i class="fa-solid fa-shield-halved"></i> {$settings['certs_badge']}</span>
+      </div>
+      <div class="top-bar-lang">
+        <button type="button" class="lang-btn active" data-lang="es">🇪🇸 ES</button>
+        <span class="lang-divider">|</span>
+        <button type="button" class="lang-btn" data-lang="en">🇺🇸 EN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="main-header" id="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo" aria-label="Global Market Inicio">
+        <img src="assets/images/logo.png?v=3" alt="Global Market Logo" class="brand-img">
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html#inicio" class="nav-link" data-i18n="nav_home">Inicio</a>
+        <a href="index.html#nosotros" class="nav-link" data-i18n="nav_about">Quiénes Somos</a>
+        <a href="index.html#productos" class="nav-link active" data-i18n="nav_products">Productos</a>
+        <a href="index.html#certificaciones" class="nav-link" data-i18n="nav_cert">Certificaciones</a>
+        <a href="index.html#logistica" class="nav-link" data-i18n="nav_logistics">Logística</a>
+        <a href="index.html#cotizador" class="nav-link nav-btn-cta" data-i18n="nav_quote">Cotizar Ahora</a>
+      </nav>
+
+      <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Abrir Menú">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- PRODUCT HERO HEADER CON IMAGEN -->
+  <section class="product-hero {$p['hero_class']}">
+    <div class="container">
+      <div class="breadcrumbs">
+        <a href="index.html">Inicio</a>
+        <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
+        <a href="index.html#productos">Nuestros Productos</a>
+        <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
+        <span>{$p['name_es']}</span>
+      </div>
+
+      <div class="product-hero-content" style="max-width: 800px;">
+        <span class="badge badge-gold" style="display: inline-block; margin-bottom: 0.75rem; padding: 0.35rem 0.85rem; border-radius: 99px;">
+          <i class="fa-solid fa-award"></i> {$p['badge_es']}
+        </span>
+        <h1 class="hero-title" style="font-size: 2.75rem; margin-bottom: 0.75rem;">{$p['name_es']}</h1>
+        <p style="font-size: 1.15rem; font-style: italic; color: var(--accent-gold); margin-bottom: 1rem;">{$p['scientific']}</p>
+        <p class="hero-desc" style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem;">{$p['tagline_es']}</p>
+
+        <div class="hero-cta-group">
+          <a href="#cotizador-producto" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Cotizar {$p['name_es']}
+          </a>
+          <a href="https://wa.me/{$settings['whatsapp']}?text=Hola%20Global%20Market,%20deseo%20cotizar%20{$p['name_es']}%20para%20exportación." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-lg">
+            <i class="fa-brands fa-whatsapp"></i> Chat WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT DETAIL & SPECS -->
+  <section class="section-padding bg-light">
+    <div class="container">
+      <div class="product-detail-grid">
+        
+        <!-- LEFT: IMAGEN HD & NUTRICIÓN -->
+        <div>
+          <div class="detail-gallery-box">
+            <img src="{$cleanMainImg}" alt="{$p['name_es']}" class="detail-main-img">
+            <div style="padding: 1.25rem; background: #FFFFFF; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="color: var(--primary-dark); font-size: 1.05rem;"><i class="fa-solid fa-location-dot text-primary"></i> Origen:</strong>
+                <span style="font-size: 0.95rem; color: var(--text-muted); margin-left: 0.35rem;">{$p['origin_es']}</span>
+              </div>
+              <span class="product-badge badge-green" style="position: static;">100% Export Quality</span>
+            </div>
+          </div>
+
+          <div style="margin-top: 2.5rem;">
+            <div class="section-tag">Propiedades & Beneficios</div>
+            <h3 style="font-size: 1.6rem; color: var(--text-main); margin-bottom: 0.5rem;">Valor Nutricional y Cualidades</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Cosechado en el punto óptimo de madurez para preservar todas sus propiedades organolépticas.</p>
+            
+            <div class="nutrition-grid">
+              {$nutriHtml}
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: TABLA TÉCNICA DETALLADA -->
+        <div>
+          <div class="specs-table-card">
+            <div class="specs-table-header">
+              <h3><i class="fa-solid fa-clipboard-check text-gold"></i> Ficha Técnica de Exportación</h3>
+              <span style="font-size: 0.8rem; background: rgba(255,255,255,0.2); padding: 0.25rem 0.6rem; border-radius: 4px;">Specs B2B</span>
+            </div>
+            <table class="specs-full-table">
+              <tbody>
+                <tr>
+                  <th>Especie / Variedad:</th>
+                  <td><strong>{$p['scientific']}</strong></td>
+                </tr>
+                <tr>
+                  <th>Grado Comercial:</th>
+                  <td>{$p['grade_es']}</td>
+                </tr>
+                <tr>
+                  <th>Calibres / Tamaños:</th>
+                  <td>{$p['calibers_es']}</td>
+                </tr>
+                <tr>
+                  <th>Longitud / Dimensiones:</th>
+                  <td>{$p['length_es']}</td>
+                </tr>
+                <tr>
+                  <th>Dulzura / Sólidos Solubles:</th>
+                  <td>{$p['brix_es']}</td>
+                </tr>
+                <tr>
+                  <th>Formato de Empaque:</th>
+                  <td>{$p['pack_es']}</td>
+                </tr>
+                <tr>
+                  <th>Temperatura en Reefer:</th>
+                  <td>{$p['temp_es']}</td>
+                </tr>
+                <tr>
+                  <th>Ventilación & Humedad:</th>
+                  <td>{$p['vent_es']}</td>
+                </tr>
+                <tr>
+                  <th>Vida Útil en Tránsito:</th>
+                  <td>{$p['shelf_es']}</td>
+                </tr>
+                <tr>
+                  <th>Paletizado & Capacidad:</th>
+                  <td>{$p['pallet_es']}</td>
+                </tr>
+                <tr>
+                  <th>Certificaciones:</th>
+                  <td><span style="color: var(--primary); font-weight: 600;">{$p['certs_es']}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- HIGHLIGHT BOX -->
+          <div style="background: #FFFFFF; border-left: 4px solid var(--primary); padding: 1.5rem; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);">
+            <h4 style="font-size: 1.1rem; color: var(--primary-dark); margin-bottom: 0.5rem;"><i class="fa-solid fa-truck-ramp-box"></i> Trazabilidad y Cadena de Frío Garantizada</h4>
+            <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+              Monitoreamos cada lote desde el corte en finca hasta la entrega en puerto con termógrafos digitales de alta precisión, garantizando que el producto llegue en perfecto estado a su destino final.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN DE GALERÍA DE FOTOS (CUADRÍCULA UNIFORME 1:1) -->
+  <section class="gallery-section" id="galeria">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag">Galería de Imágenes</div>
+        <h2 class="section-title">{$p['name_es']}</h2>
+        <p class="section-subtitle">
+          Catálogo visual de exportación. Haz clic sobre cualquier fotografía para verla en alta definición.
+        </p>
+      </div>
+
+      <!-- GRID UNIFORME 1:1 (FOTOGRAFÍAS REALES ORDENADAS) -->
+      <div class="gallery-grid" id="galleryGrid">
+{$galleryHtml}      </div>
+    </div>
+  </section>
+
+  <!-- LIGHTBOX MODAL PARA VER FOTOS EN PANTALLA COMPLETA -->
+  <div class="lightbox-modal" id="lightboxModal">
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    <button type="button" class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+    <button type="button" class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+    
+    <div class="lightbox-dialog">
+      <div class="lightbox-img-wrapper">
+        <img src="" alt="Vista ampliada" class="lightbox-img" id="lightboxImg">
+      </div>
+      <div class="lightbox-footer">
+        <p class="lightbox-caption" id="lightboxCaption"></p>
+        <span class="lightbox-counter" id="lightboxCounter">1 / 1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- COTIZADOR DEDICADO PARA ESTE PRODUCTO -->
+  <section class="section-padding" id="cotizador-producto" style="background: var(--bg-dark); color: #FFFFFF;">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag">Cotización Directa</div>
+        <h2 class="section-title text-white">Solicitar Cotización de {$p['name_es']}</h2>
+        <p class="section-subtitle text-white-muted">
+          Completa el formulario y recibe una propuesta FOB / CIF formal en menos de 24 horas.
+        </p>
+      </div>
+
+      <div class="quote-form-card" style="max-width: 800px; margin: 0 auto;">
+        <form id="productQuoteForm" class="quote-form">
+          <input type="hidden" id="selectedProduct" value="{$p['name_es']}">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="pClientName" class="form-label"><i class="fa-solid fa-user"></i> Nombre Completo / Empresa *</label>
+              <input type="text" id="pClientName" class="form-input" placeholder="Ej: John Doe / Fresh Imports LLC" required>
+            </div>
+            <div class="form-group">
+              <label for="pClientEmail" class="form-label"><i class="fa-solid fa-envelope"></i> Correo Electrónico *</label>
+              <input type="email" id="pClientEmail" class="form-input" placeholder="procurement@company.com" required>
+            </div>
+            <div class="form-group">
+              <label for="pClientPhone" class="form-label"><i class="fa-brands fa-whatsapp"></i> Teléfono / WhatsApp *</label>
+              <input type="tel" id="pClientPhone" class="form-input" placeholder="+1 (555) 000-0000" required>
+            </div>
+            <div class="form-group">
+              <label for="pDestCountry" class="form-label"><i class="fa-solid fa-globe"></i> País y Puerto de Destino *</label>
+              <input type="text" id="pDestCountry" class="form-input" placeholder="Ej: Port of Miami / Rotterdam / Hamburgo" required>
+            </div>
+            <div class="form-group">
+              <label for="pVolume" class="form-label"><i class="fa-solid fa-box-open"></i> Volumen Estimado *</label>
+              <select id="pVolume" class="form-select" required>
+                <option value="1 Contenedor 40ft Reefer (Spot)">1 Contenedor 40ft Reefer (Spot)</option>
+                <option value="2 a 4 Contenedores / Mes">2 a 4 Contenedores / Mes</option>
+                <option value="+5 Contenedores / Mes (Programa Anual)">+5 Contenedores / Mes (Programa Anual)</option>
+                <option value="Carga Aérea (Pallets)">Carga Aérea (Pallets Semanales)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="pIncoterm" class="form-label"><i class="fa-solid fa-handshake"></i> Incoterm Preferido</label>
+              <select id="pIncoterm" class="form-select">
+                <option value="FOB Guayaquil">FOB (Guayaquil, Ecuador)</option>
+                <option value="CIF Puerto de Destino" selected>CIF (Costo, Seguro y Flete)</option>
+                <option value="CFR Puerto de Destino">CFR (Costo y Flete)</option>
+                <option value="FCA Aeropuerto UIO/GYE">FCA (Carga Aérea)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label for="pMessage" class="form-label"><i class="fa-solid fa-comment-dots"></i> Requerimientos Especiales / Calibres Específicos</label>
+            <textarea id="pMessage" class="form-textarea" rows="3" placeholder="Indica calibres de preferencia, formato de empaque o semanas de despacho requeridas..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1rem;">
+            <i class="fa-solid fa-paper-plane"></i> Enviar Solicitud de Cotización B2B
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="main-footer">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <img src="assets/images/logo-dark.jpg?v=3" alt="Global Market GM" class="footer-logo">
+        <p class="footer-desc">
+          Empresa exportadora ecuatoriana líder en frutas exóticas y tradicionales de calidad premium.
+        </p>
+        <div class="footer-social">
+          <a href="{$settings['social']['facebook']}" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="{$settings['social']['instagram']}" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="{$settings['social']['linkedin']}" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="https://wa.me/{$settings['whatsapp']}" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-title">Nuestras Frutas</h4>
+        <ul class="footer-links">
+          <li><a href="banano.html">Banano Cavendish</a></li>
+          <li><a href="platano.html">Plátano Verde / Barraganete</a></li>
+          <li><a href="pitahaya-roja.html">Pitahaya Roja (Red Dragon)</a></li>
+          <li><a href="pitahaya-amarilla.html">Pitahaya Amarilla de Palora</a></li>
+          <li><a href="malanga.html">Malanga / Taro Root</a></li>
+          <li><a href="maracuya.html">Maracuyá (Passion Fruit)</a></li>
+          <li><a href="pina.html">Piña Golden MD2</a></li>
+          <li><a href="mango.html">Mango de Exportación</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-title">Enlaces Rápidos</h4>
+        <ul class="footer-links">
+          <li><a href="index.html#inicio">Inicio</a></li>
+          <li><a href="index.html#nosotros">Quiénes Somos</a></li>
+          <li><a href="index.html#certificaciones">Garantía de Calidad</a></li>
+          <li><a href="index.html#logistica">Operaciones de Embarque</a></li>
+          <li><a href="index.html#cotizador">Solicitar Cotización</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-title">Contacto Directo</h4>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-location-dot"></i>
+          <span>{$settings['address']}</span>
+        </div>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-phone"></i>
+          <span>{$settings['phone']}</span>
+        </div>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-envelope"></i>
+          <span>{$settings['email']}</span>
+        </div>
+        <div class="footer-contact-item">
+          <i class="fa-solid fa-clock"></i>
+          <span>Lunes a Sábado: 08:00 - 18:00 (GMT-5)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <p>&copy; 2026 GlobalMarket GM Cía. Ltda. Todos los derechos reservados.</p>
+        <div class="footer-legal">
+          <span>Ecuador Export Quality</span>
+          <span>•</span>
+          <span>BASC & GlobalG.A.P.</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- FLOATING WHATSAPP BUTTON -->
+  <a href="https://wa.me/{$settings['whatsapp']}?text=Hola%20Global%20Market,%20deseo%20información%20sobre%20la%20exportación%20de%20{$p['name_es']}." class="floating-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
+    <i class="fa-brands fa-whatsapp"></i>
+    <span class="whatsapp-tooltip">¿Deseas cotizar {$p['name_es']}? Chatea con nosotros</span>
+  </a>
+
+  <!-- SCRIPTS -->
+  <script src="app.js?v=6"></script>
+</body>
+</html>
+HTML;
+
+    return file_put_contents($filePath, $content);
+}
+
+function rebuild_all_pages() {
+    $products = get_products_data();
+    $settings = get_site_settings();
+    $count = 0;
+    foreach ($products as $p) {
+        if (rebuild_product_page($p, $settings)) {
+            $count++;
+        }
+    }
+    return $count;
+}
