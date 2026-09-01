@@ -4,13 +4,103 @@ require_drive_auth();
 
 $currentUser = get_logged_drive_user();
 $isAdmin = is_drive_admin();
+
+// Pre-load initial tree data for instant rendering
+$baseStorageDir = __DIR__ . '/data/storage';
+if (!is_dir($baseStorageDir . '/GlobalMarket')) {
+    @mkdir($baseStorageDir . '/GlobalMarket', 0755, true);
+}
+
+$initialReqPath = 'GlobalMarket';
+$targetDir = $baseStorageDir . '/' . $initialReqPath;
+$items = @scandir($targetDir) ?: [];
+$folders = [];
+$files = [];
+$totalSize = 0;
+
+function initial_file_icon($filename) {
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    $map = [
+        'pdf' => ['icon' => 'fa-file-pdf', 'color' => '#ef4444', 'type' => 'PDF', 'preview' => true],
+        'doc' => ['icon' => 'fa-file-word', 'color' => '#3b82f6', 'type' => 'Documento Word', 'preview' => false],
+        'docx' => ['icon' => 'fa-file-word', 'color' => '#3b82f6', 'type' => 'Documento Word', 'preview' => false],
+        'xls' => ['icon' => 'fa-file-excel', 'color' => '#10b981', 'type' => 'Hoja de Cálculo', 'preview' => false],
+        'xlsx' => ['icon' => 'fa-file-excel', 'color' => '#10b981', 'type' => 'Hoja de Cálculo', 'preview' => false],
+        'csv' => ['icon' => 'fa-file-csv', 'color' => '#10b981', 'type' => 'CSV', 'preview' => false],
+        'ppt' => ['icon' => 'fa-file-powerpoint', 'color' => '#f97316', 'type' => 'Presentación', 'preview' => false],
+        'pptx' => ['icon' => 'fa-file-powerpoint', 'color' => '#f97316', 'type' => 'Presentación', 'preview' => false],
+        'jpg' => ['icon' => 'fa-file-image', 'color' => '#fbbf24', 'type' => 'Imagen JPG', 'preview' => true],
+        'jpeg' => ['icon' => 'fa-file-image', 'color' => '#fbbf24', 'type' => 'Imagen JPG', 'preview' => true],
+        'png' => ['icon' => 'fa-file-image', 'color' => '#fbbf24', 'type' => 'Imagen PNG', 'preview' => true],
+        'webp' => ['icon' => 'fa-file-image', 'color' => '#fbbf24', 'type' => 'Imagen WebP', 'preview' => true],
+        'mp4' => ['icon' => 'fa-file-video', 'color' => '#8b5cf6', 'type' => 'Video MP4', 'preview' => true],
+        'mov' => ['icon' => 'fa-file-video', 'color' => '#8b5cf6', 'type' => 'Video QuickTime', 'preview' => true],
+        'zip' => ['icon' => 'fa-file-zipper', 'color' => '#eab308', 'type' => 'Archivo ZIP', 'preview' => false],
+    ];
+    return $map[$ext] ?? ['icon' => 'fa-file', 'color' => '#9ca3af', 'type' => strtoupper($ext) . ' Archivo', 'preview' => false];
+}
+
+function initial_format_size($bytes) {
+    if ($bytes >= 1048576) return number_format($bytes / 1048576, 2) . ' MB';
+    if ($bytes >= 1024) return number_format($bytes / 1024, 1) . ' KB';
+    return $bytes . ' bytes';
+}
+
+foreach ($items as $item) {
+    if ($item === '.' || $item === '..' || $item === '.htaccess') continue;
+    $itemFull = $targetDir . '/' . $item;
+    if (is_dir($itemFull)) {
+        $sub = @scandir($itemFull) ?: [];
+        $cnt = 0;
+        foreach ($sub as $s) { if ($s !== '.' && $s !== '..' && $s !== '.htaccess') $cnt++; }
+        $folders[] = [
+            'name' => $item,
+            'path' => 'GlobalMarket/' . $item,
+            'mtime' => date('d/m/Y H:i', filemtime($itemFull)),
+            'items_count' => $cnt
+        ];
+    } elseif (is_file($itemFull)) {
+        $sz = filesize($itemFull);
+        $totalSize += $sz;
+        $m = initial_file_icon($item);
+        $files[] = [
+            'name' => $item,
+            'path' => 'GlobalMarket/' . $item,
+            'size' => $sz,
+            'size_formatted' => initial_format_size($sz),
+            'mtime' => date('d/m/Y H:i', filemtime($itemFull)),
+            'ext' => strtolower(pathinfo($item, PATHINFO_EXTENSION)),
+            'icon' => $m['icon'],
+            'color' => $m['color'],
+            'type_name' => $m['type'],
+            'previewable' => $m['preview']
+        ];
+    }
+}
+
+$initialPayload = [
+    'current_path' => 'GlobalMarket',
+    'breadcrumbs' => [['name' => 'GlobalMarket', 'path' => 'GlobalMarket']],
+    'folders' => $folders,
+    'files' => $files,
+    'stats' => [
+        'folders_count' => count($folders),
+        'files_count' => count($files),
+        'total_size' => initial_format_size($totalSize)
+    ],
+    'user' => [
+        'name' => $currentUser['name'],
+        'role' => $currentUser['role'],
+        'is_admin' => $isAdmin
+    ]
+];
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GlobalMarket Cloud Vault | Portal de Archivos & Intranet</title>
+  <title>Drive GlobalMarket | Portal de Archivos & Intranet</title>
   <link rel="icon" type="image/png" href="../assets/images/favicon.png?v=3">
 
   <!-- Google Fonts & FontAwesome -->
@@ -19,7 +109,7 @@ $isAdmin = is_drive_admin();
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <link rel="stylesheet" href="css/drive.css?v=2">
+  <link rel="stylesheet" href="css/drive.css?v=3">
 </head>
 <body>
 
@@ -28,7 +118,7 @@ $isAdmin = is_drive_admin();
     <div class="topbar-left">
       <a href="index.php" class="drive-brand">
         <img src="../assets/images/logo.png?v=3" alt="GlobalMarket GM" class="drive-logo">
-        <span class="drive-title">Cloud Vault <span class="badge-vault">Drive Pro</span></span>
+        <span class="drive-title">Drive GlobalMarket <span class="badge-vault">Pro</span></span>
       </a>
     </div>
 
@@ -71,23 +161,7 @@ $isAdmin = is_drive_admin();
         <span class="sidebar-category">Navegación</span>
         <a href="#" class="sidebar-link sidebar-shortcut active" data-path="GlobalMarket">
           <i class="fa-solid fa-hard-drive"></i>
-          <span>Mi Unidad (Raíz)</span>
-        </a>
-        <a href="#" class="sidebar-link sidebar-shortcut" data-path="GlobalMarket/Certificaciones">
-          <i class="fa-solid fa-shield-halved"></i>
-          <span>Certificaciones</span>
-        </a>
-        <a href="#" class="sidebar-link sidebar-shortcut" data-path="GlobalMarket/Fichas_Tecnicas">
-          <i class="fa-solid fa-file-pdf"></i>
-          <span>Fichas Técnicas</span>
-        </a>
-        <a href="#" class="sidebar-link sidebar-shortcut" data-path="GlobalMarket/Catalogos_2026">
-          <i class="fa-solid fa-book-open"></i>
-          <span>Catálogos 2026</span>
-        </a>
-        <a href="#" class="sidebar-link sidebar-shortcut" data-path="GlobalMarket/Fotos_Alta_Resolucion">
-          <i class="fa-solid fa-images"></i>
-          <span>Fotos HD & Videos</span>
+          <span>Mi Unidad (GlobalMarket)</span>
         </a>
 
         <span class="sidebar-category">Aplicativos Corporativos</span>
@@ -115,7 +189,7 @@ $isAdmin = is_drive_admin();
             <div class="meter-fill"></div>
           </div>
         </div>
-        <small style="color: rgba(255,255,255,0.3); font-size: 0.72rem; text-align: center;">GlobalMarket Vault v1.0</small>
+        <small style="color: rgba(255,255,255,0.3); font-size: 0.72rem; text-align: center;">Drive GlobalMarket v2.0</small>
       </div>
     </aside>
 
@@ -191,7 +265,7 @@ $isAdmin = is_drive_admin();
       <form id="formNewFolder">
         <div class="form-group">
           <label for="newFolderName">Nombre de la Carpeta</label>
-          <input type="text" id="newFolderName" class="form-control" placeholder="Ej: Contratos 2026 o Analisis Fito" required autofocus>
+          <input type="text" id="newFolderName" class="form-control" placeholder="Ej: Certificados o Fichas Tecnicas" required autofocus>
         </div>
         <button type="submit" class="btn btn-primary btn-block">
           <i class="fa-solid fa-check"></i> Crear Carpeta
@@ -259,6 +333,9 @@ $isAdmin = is_drive_admin();
     <div class="toast-message" id="toastMessage">Operación exitosa</div>
   </div>
 
-  <script src="js/drive.js?v=2"></script>
+  <script>
+    window.INITIAL_DRIVE_DATA = <?= json_encode($initialPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+  </script>
+  <script src="js/drive.js?v=3"></script>
 </body>
 </html>

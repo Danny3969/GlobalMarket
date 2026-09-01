@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Cloud Drive & Intranet | GlobalMarket GM</title>
+  <title>Drive GlobalMarket | Portal de Archivos & Intranet</title>
   <link rel="icon" type="image/png" href="../assets/images/favicon.png?v=3">
 
   <!-- Google Fonts & FontAwesome -->
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <link rel="stylesheet" href="css/drive.css?v=1">
+  <link rel="stylesheet" href="css/drive.css?v=3">
 </head>
 <body class="drive-login-body">
 
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="../index.html">
           <img src="../assets/images/logo.png?v=3" alt="GlobalMarket GM" class="login-logo">
         </a>
-        <h2>GlobalMarket Cloud Vault</h2>
+        <h2>Drive GlobalMarket</h2>
         <p>Portal Privado de Almacenamiento & Documentación de Exportación</p>
       </div>
 

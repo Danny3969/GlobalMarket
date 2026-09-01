@@ -321,11 +321,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // State
-  let currentLang = 'es';
+  // State & Persistence
+  let currentLang = localStorage.getItem('gm_lang') || 'es';
 
   function applyLanguage(lang) {
+    if (!translations[lang]) lang = 'es';
     currentLang = lang;
+    localStorage.setItem('gm_lang', lang);
     document.documentElement.lang = lang;
     const dict = translations[lang];
 
@@ -338,11 +340,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const langLabel = document.getElementById('currentLangLabel');
     if (langLabel) {
-      langLabel.textContent = lang === 'es' ? '🇪🇸 ES' : '🇺🇸 EN';
+      langLabel.innerHTML = lang === 'es' ? '🇪🇸 ES' : '🇺🇸 EN';
     }
 
     document.querySelectorAll('.lang-option').forEach(opt => {
       opt.classList.toggle('active', opt.getAttribute('data-lang') === lang);
+    });
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
     });
 
     // Update select placeholder
@@ -352,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Language Dropdown Toggle
+  // Language Dropdown Toggle (Desktop & Mobile)
   const langSwitch = document.getElementById('langSwitch');
   const langDropdown = document.getElementById('langDropdown');
 
@@ -375,6 +381,18 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+  // Language Buttons on Subpages
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const selectedLang = btn.getAttribute('data-lang');
+      applyLanguage(selectedLang);
+    });
+  });
+
+  // Apply initial saved language
+  applyLanguage(currentLang);
 
   // ==========================================
   // MOBILE NAVIGATION DRAWER

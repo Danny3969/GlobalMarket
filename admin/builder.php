@@ -179,7 +179,8 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
         <span class="top-bar-badge"><i class="fa-solid fa-shield-halved"></i> {$certsBadge}</span>
       </div>
       <div class="top-bar-lang">
-        <a href="drive/index.php" class="top-bar-portal-btn" title="Portal Corporativo / Drive Privado" style="color: #fbbf24; text-decoration: none; font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.75rem;"><i class="fa-solid fa-lock"></i> <span>Intranet</span></a>
+        <a href="drive/index.php" class="top-bar-portal-btn" title="Portal Drive Privado & Intranet" style="background: rgba(217, 119, 6, 0.22); border: 1px solid rgba(251, 191, 36, 0.45); color: #fbbf24; padding: 0.2rem 0.65rem; border-radius: 99px; text-decoration: none; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.4rem;"><i class="fa-solid fa-lock"></i> <span>Drive</span></a>
+        <a href="https://globalmarket-gm.com/webmail" target="_blank" class="top-bar-webmail-btn" title="Webmail de Correos Corporativos" style="background: rgba(59, 130, 246, 0.18); border: 1px solid rgba(96, 165, 250, 0.4); color: #93c5fd; padding: 0.2rem 0.65rem; border-radius: 99px; text-decoration: none; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.5rem;"><i class="fa-solid fa-envelope"></i> <span>Webmail</span></a>
         <span class="lang-divider">|</span>
         <button type="button" class="lang-btn active" data-lang="es">🇪🇸 ES</button>
         <span class="lang-divider">|</span>
@@ -694,7 +695,8 @@ HTML;
         <span><i class="fa-solid fa-shield-halved"></i> <span>{$certsBadge}</span></span>
       </div>
       <div class="top-bar-right">
-        <a href="drive/index.php" class="top-link" title="Portal Corporativo / Drive Privado" style="display: inline-flex; align-items: center; gap: 0.35rem; color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-lock"></i> <span>Intranet</span></a>
+        <a href="drive/index.php" class="top-bar-portal-btn" title="Portal Drive Privado & Intranet" style="background: rgba(217, 119, 6, 0.22); border: 1px solid rgba(251, 191, 36, 0.45); color: #fbbf24; padding: 0.2rem 0.65rem; border-radius: 99px; text-decoration: none; font-size: 0.8rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-lock"></i> <span>Drive GlobalMarket</span></a>
+        <a href="https://globalmarket-gm.com/webmail" target="_blank" class="top-bar-webmail-btn" title="Webmail de Correos Corporativos" style="background: rgba(59, 130, 246, 0.18); border: 1px solid rgba(96, 165, 250, 0.4); color: #93c5fd; padding: 0.2rem 0.65rem; border-radius: 99px; text-decoration: none; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-envelope"></i> <span>Webmail</span></a>
         <a href="mailto:{$email}" class="top-link"><i class="fa-regular fa-envelope"></i> {$email}</a>
         <div class="lang-switch-btn" id="langSwitch" title="Cambiar idioma">
           <span id="currentLangLabel">🇪🇸 ES</span> <i class="fa-solid fa-chevron-down"></i>
@@ -743,13 +745,16 @@ HTML;
       </button>
     </div>
     <div class="mobile-drawer-links">
-      <a href="#inicio" class="mobile-link">Inicio</a>
-      <a href="#nosotros" class="mobile-link">Nosotros</a>
-      <a href="#productos" class="mobile-link">Productos</a>
-      <a href="#certificaciones" class="mobile-link">Certificaciones</a>
-      <a href="#logistica" class="mobile-link">Logística</a>
-      <a href="#contacto" class="mobile-link">Contacto</a>
-      <a href="#cotizador" class="btn btn-primary" style="margin-top: 1.5rem; justify-content: center;">Cotizar Frutas</a>
+      <a href="#inicio" class="mobile-link" data-i18n="nav_home">Inicio</a>
+      <a href="#nosotros" class="mobile-link" data-i18n="nav_about">Nosotros</a>
+      <a href="#productos" class="mobile-link" data-i18n="nav_products">Productos</a>
+      <a href="#certificaciones" class="mobile-link" data-i18n="nav_cert">Certificaciones</a>
+      <a href="#logistica" class="mobile-link" data-i18n="nav_logistics">Logística</a>
+      <a href="#contacto" class="mobile-link" data-i18n="nav_contact">Contacto</a>
+      <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 0.75rem 0;"></div>
+      <a href="drive/index.php" class="mobile-link" style="color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-lock"></i> Drive GlobalMarket</a>
+      <a href="https://globalmarket-gm.com/webmail" target="_blank" class="mobile-link" style="color: #60a5fa;"><i class="fa-solid fa-envelope"></i> Webmail Corporativo</a>
+      <a href="#cotizador" class="btn btn-primary" style="margin-top: 1rem; justify-content: center;" data-i18n="btn_request_quote">Cotizar Frutas</a>
     </div>
   </div>
 

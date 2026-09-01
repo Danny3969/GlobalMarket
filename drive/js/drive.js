@@ -1,13 +1,15 @@
 // GlobalMarket GM - Cloud Drive Controller
 document.addEventListener('DOMContentLoaded', () => {
+  const rawInit = window.INITIAL_DRIVE_DATA || {};
+
   let driveState = {
-    currentPath: 'GlobalMarket',
+    currentPath: rawInit.current_path || 'GlobalMarket',
     currentView: 'grid',
-    folders: [],
-    files: [],
-    breadcrumbs: [],
-    stats: {},
-    user: {},
+    folders: rawInit.folders || [],
+    files: rawInit.files || [],
+    breadcrumbs: rawInit.breadcrumbs || [{ name: 'GlobalMarket', path: 'GlobalMarket' }],
+    stats: rawInit.stats || {},
+    user: rawInit.user || {},
     searchQuery: ''
   };
 
@@ -51,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
         driveState.stats = data.stats;
         driveState.user = data.user;
 
-        // Update UI permissions
         updateUIPermissions();
         renderBreadcrumbs();
         renderExplorer();
@@ -115,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     container.innerHTML = '';
 
     // Filter by search query
-    const q = driveState.searchQuery.toLowerCase().trim();
+    const q = (driveState.searchQuery || '').toLowerCase().trim();
     const filteredFolders = driveState.folders.filter(f => f.name.toLowerCase().includes(q));
     const filteredFiles = driveState.files.filter(f => f.name.toLowerCase().includes(q));
 
@@ -639,7 +640,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================================================================
-  // 10. INITIAL LOAD
+  // 10. INITIAL RENDER
   // =========================================================================
-  loadDirectory('GlobalMarket');
+  updateUIPermissions();
+  renderBreadcrumbs();
+  renderExplorer();
 });

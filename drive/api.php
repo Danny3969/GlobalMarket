@@ -12,10 +12,23 @@ $currentUser = get_logged_drive_user();
 $isAdmin = is_drive_admin();
 $action = $_GET['action'] ?? '';
 
-$baseStorageDir = realpath(__DIR__ . '/data/storage');
-if (!$baseStorageDir) {
-    mkdir(__DIR__ . '/data/storage', 0755, true);
-    $baseStorageDir = realpath(__DIR__ . '/data/storage');
+$baseStorageDir = __DIR__ . '/data/storage';
+if (!is_dir($baseStorageDir)) {
+    @mkdir($baseStorageDir, 0755, true);
+}
+if (!is_dir($baseStorageDir . '/GlobalMarket')) {
+    @mkdir($baseStorageDir . '/GlobalMarket', 0755, true);
+}
+
+// Global Recursive Directory Deletion Helper
+function delete_dir_recursive($dir) {
+    if (!is_dir($dir)) return false;
+    $files = array_diff(scandir($dir), ['.', '..']);
+    foreach ($files as $file) {
+        $filePath = $dir . '/' . $file;
+        (is_dir($filePath)) ? delete_dir_recursive($filePath) : @unlink($filePath);
+    }
+    return @rmdir($dir);
 }
 
 // Path Sanitizer & Security Validator
@@ -23,15 +36,21 @@ function get_safe_full_path($baseDir, $relativePath) {
     $cleanRel = trim($relativePath, "/\\ \t\n\r\0\x0B");
     $cleanRel = str_replace(['../', '..\\', '..'], '', $cleanRel);
     
-    $targetPath = $baseDir . ($cleanRel !== '' ? '/' . $cleanRel : '');
+    $targetPath = $baseDir . ($cleanRel !== '' ? '/' . $cleanRel : '/GlobalMarket');
     
-    // Create if base directory
     if (!file_exists($targetPath)) {
-        return ['valid' => false, 'path' => null, 'exists' => false];
+        // Auto-create if it's within GlobalMarket
+        if ($cleanRel === 'GlobalMarket') {
+            @mkdir($targetPath, 0755, true);
+        } else {
+            return ['valid' => false, 'path' => null, 'exists' => false];
+        }
     }
     
     $realTarget = realpath($targetPath);
-    if ($realTarget === false || strpos($realTarget, $baseDir) !== 0) {
+    $realBase = realpath($baseDir);
+    
+    if ($realTarget === false || $realBase === false || strpos($realTarget, $realBase) !== 0) {
         return ['valid' => false, 'path' => null, 'exists' => false];
     }
     
@@ -92,17 +111,17 @@ switch ($action) {
     // =========================================================================
     case 'get_tree':
         header('Content-Type: application/json');
-        $reqPath = $_GET['path'] ?? 'GlobalMarket';
+        $reqPath = !empty($_GET['path']) ? $_GET['path'] : 'GlobalMarket';
         
         $check = get_safe_full_path($baseStorageDir, $reqPath);
         if (!$check['valid'] || !$check['exists'] || !is_dir($check['path'])) {
-            // Fallback to base
             $reqPath = 'GlobalMarket';
             $check = get_safe_full_path($baseStorageDir, $reqPath);
         }
 
         $fullPath = $check['path'];
-        $items = scandir($fullPath);
+        $items = @scandir($fullPath) ?: [];
+        $realBase = realpath($baseStorageDir);
         
         $folders = [];
         $files = [];
@@ -112,10 +131,9 @@ switch ($action) {
             if ($item === '.' || $item === '..' || $item === '.htaccess') continue;
             
             $itemFullPath = $fullPath . '/' . $item;
-            $relItemPath = trim(str_replace($baseStorageDir, '', $itemFullPath), "/\\");
+            $relItemPath = trim(str_replace($realBase, '', $itemFullPath), "/\\");
             
             if (is_dir($itemFullPath)) {
-                // Count children
                 $subItems = @scandir($itemFullPath) ?: [];
                 $childCount = 0;
                 foreach ($subItems as $si) {
@@ -368,15 +386,6 @@ switch ($action) {
                 echo json_encode(['success' => false, 'error' => 'No se pudo eliminar el archivo']);
             }
         } elseif (is_dir($target)) {
-            // Recursive directory delete
-            function delete_dir_recursive($dir) {
-                $files = array_diff(scandir($dir), ['.', '..']);
-                foreach ($files as $file) {
-                    (is_dir("$dir/$file")) ? delete_dir_recursive("$dir/$file") : @unlink("$dir/$file");
-                }
-                return @rmdir($dir);
-            }
-
             if (delete_dir_recursive($target)) {
                 echo json_encode(['success' => true, 'message' => 'Carpeta eliminada con éxito']);
             } else {
