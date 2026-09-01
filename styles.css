@@ -1803,18 +1803,20 @@ img {
 
 .gallery-card {
   position: relative;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: #000000;
-  aspect-ratio: 4 / 3;
+  background: #1F2937;
+  aspect-ratio: 1 / 1;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border-light);
 }
 
 .gallery-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
 }
 
 .gallery-thumb {
@@ -1822,22 +1824,20 @@ img {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.5s ease, opacity 0.3s ease;
+  transition: transform 0.4s ease;
 }
 
 .gallery-card:hover .gallery-thumb {
-  transform: scale(1.08);
-  opacity: 0.85;
+  transform: scale(1.06);
 }
 
 .gallery-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(6, 21, 15, 0.9) 0%, rgba(6, 21, 15, 0.2) 60%, transparent 100%);
+  background: rgba(6, 21, 15, 0.4);
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 1.25rem;
+  align-items: center;
+  justify-content: center;
   color: #FFFFFF;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -1847,34 +1847,23 @@ img {
   opacity: 1;
 }
 
-.gallery-overlay h4 {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-  color: #FFFFFF;
-}
-
-.gallery-overlay p {
-  font-size: 0.8rem;
-  color: var(--accent-gold);
-  margin: 0;
+.gallery-overlay-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #FFFFFF;
+  transform: scale(0.85);
+  transition: transform 0.3s ease;
 }
 
-.gallery-badge {
-  position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
-  color: #FFFFFF;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 0.2rem 0.6rem;
-  border-radius: 4px;
-  z-index: 2;
+.gallery-card:hover .gallery-overlay-icon {
+  transform: scale(1);
 }
 
 /* Lightbox Modal */

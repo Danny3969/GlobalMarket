@@ -839,10 +839,9 @@ document.addEventListener('DOMContentLoaded', () => {
     currentGalleryIndex = index;
     const item = activeVisibleItems[currentGalleryIndex];
     const fullImgSrc = item.getAttribute('data-src') || item.querySelector('img')?.src;
-    const captionText = item.getAttribute('data-caption') || item.querySelector('h4')?.textContent || 'Pitahaya Red Dragon';
 
     if (lightboxImg) lightboxImg.src = fullImgSrc;
-    if (lightboxCaption) lightboxCaption.textContent = captionText;
+    if (lightboxCaption) lightboxCaption.textContent = '';
     if (lightboxCounter) lightboxCounter.textContent = `${currentGalleryIndex + 1} / ${activeVisibleItems.length}`;
 
     lightboxModal.classList.add('active');
