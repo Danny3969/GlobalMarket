@@ -179,6 +179,8 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
         <span class="top-bar-badge"><i class="fa-solid fa-shield-halved"></i> {$certsBadge}</span>
       </div>
       <div class="top-bar-lang">
+        <a href="drive/index.php" class="top-bar-portal-btn" title="Portal Corporativo / Drive Privado" style="color: #fbbf24; text-decoration: none; font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.75rem;"><i class="fa-solid fa-lock"></i> <span>Intranet</span></a>
+        <span class="lang-divider">|</span>
         <button type="button" class="lang-btn active" data-lang="es">🇪🇸 ES</button>
         <span class="lang-divider">|</span>
         <button type="button" class="lang-btn" data-lang="en">🇺🇸 EN</button>
@@ -465,6 +467,8 @@ function rebuild_product_page($p, $settings, $menuItems = null) {
           <li><a href="index.html#certificaciones">Garantía de Calidad</a></li>
           <li><a href="index.html#logistica">Operaciones de Embarque</a></li>
           <li><a href="index.html#cotizador">Solicitar Cotización</a></li>
+          <li><a href="drive/index.php" style="color: #fbbf24;"><i class="fa-solid fa-lock"></i> Portal Clientes & Intranet</a></li>
+          <li><a href="https://globalmarket-gm.com/webmail" target="_blank" style="color: #60a5fa;"><i class="fa-solid fa-envelope"></i> Webmail Corporativo</a></li>
         </ul>
       </div>
 
@@ -690,6 +694,7 @@ HTML;
         <span><i class="fa-solid fa-shield-halved"></i> <span>{$certsBadge}</span></span>
       </div>
       <div class="top-bar-right">
+        <a href="drive/index.php" class="top-link" title="Portal Corporativo / Drive Privado" style="display: inline-flex; align-items: center; gap: 0.35rem; color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-lock"></i> <span>Intranet</span></a>
         <a href="mailto:{$email}" class="top-link"><i class="fa-regular fa-envelope"></i> {$email}</a>
         <div class="lang-switch-btn" id="langSwitch" title="Cambiar idioma">
           <span id="currentLangLabel">🇪🇸 ES</span> <i class="fa-solid fa-chevron-down"></i>
@@ -1077,6 +1082,8 @@ HTML;
           <li><a href="#certificaciones">Garantía de Calidad</a></li>
           <li><a href="#logistica">Operaciones de Embarque</a></li>
           <li><a href="#cotizador">Solicitar Cotización</a></li>
+          <li><a href="drive/index.php" style="color: #fbbf24;"><i class="fa-solid fa-lock"></i> Portal Clientes & Intranet</a></li>
+          <li><a href="https://globalmarket-gm.com/webmail" target="_blank" style="color: #60a5fa;"><i class="fa-solid fa-envelope"></i> Webmail Corporativo</a></li>
         </ul>
       </div>
 
