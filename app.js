@@ -765,8 +765,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Product Detail Page Dedicated Form
+  const productQuoteForm = document.getElementById('productQuoteForm');
+  if (productQuoteForm) {
+    productQuoteForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const prodName = document.getElementById('selectedProduct')?.value || 'Producto de Exportación';
+      const clientName = document.getElementById('pClientName')?.value.trim() || 'Cliente';
+      const clientEmail = document.getElementById('pClientEmail')?.value.trim() || '';
+      const clientPhone = document.getElementById('pClientPhone')?.value.trim() || '';
+      const dest = document.getElementById('pDestCountry')?.value.trim() || 'Puerto Internacional';
+      const volume = document.getElementById('pVolume')?.value || '1 Contenedor FCL';
+      const incoterm = document.getElementById('pIncoterm')?.value || 'FOB';
+      const notes = document.getElementById('pComments')?.value.trim() || 'Ninguna';
+
+      const text = `👋 *SOLICITUD DE COTIZACIÓN - GLOBAL MARKET GM*\n\n` +
+        `🍎 *Producto Solicitado:* ${prodName}\n` +
+        `👤 *Contacto / Empresa:* ${clientName}\n` +
+        `📧 *Email:* ${clientEmail}\n` +
+        `📱 *Teléfono:* ${clientPhone}\n` +
+        `📦 *Volumen:* ${volume}\n` +
+        `🌍 *Destino:* ${dest}\n` +
+        `📋 *Incoterm:* ${incoterm}\n` +
+        `📝 *Especificaciones:* ${notes}\n\n` +
+        `_Enviado desde la página oficial del producto en globalmarket-gm.com_`;
+
+      window.open(`https://wa.me/593999999999?text=${encodeURIComponent(text)}`, '_blank');
+      alert('¡Gracias! Tu solicitud de cotización ha sido enviada. Uno de nuestros ejecutivos de comercio exterior te contactará en breve.');
+      productQuoteForm.reset();
+    });
+  }
+
   // Smooth Header Scroll shadow
-  const mainHeader = document.getElementById('mainHeader');
+  const mainHeader = document.getElementById('mainHeader') || document.getElementById('navbar');
   window.addEventListener('scroll', () => {
     if (window.scrollY > 40) {
       mainHeader?.classList.add('scrolled');
@@ -776,3 +807,4 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+
