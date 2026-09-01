@@ -292,34 +292,31 @@ img {
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  transition: var(--transition);
+}
+
+.brand-logo:hover {
+  transform: scale(1.02);
 }
 
 .brand-img {
-  height: 48px;
+  height: 54px;
   width: auto;
+  max-width: 220px;
+  object-fit: contain;
+  display: block;
+}
+
+.footer-logo-img {
+  height: 52px;
+  width: auto;
+  max-width: 210px;
+  object-fit: contain;
+  display: block;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 8px;
   border-radius: var(--radius-sm);
-}
-
-.brand-name {
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--primary);
-  display: block;
-  line-height: 1.1;
-}
-
-.brand-highlight {
-  color: var(--accent-gold);
-}
-
-.brand-tagline {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
-  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .nav-menu {
