@@ -33,6 +33,7 @@ def make_remote_dirs(r_dir):
 
 make_remote_dirs('assets')
 make_remote_dirs('assets/images')
+make_remote_dirs('assets/images/pitahaya')
 
 print(f"\n📤 Subiendo archivos a {REMOTE_ROOT}...")
 
@@ -49,6 +50,11 @@ for root, dirs, files in os.walk(local_dir):
         rel_path = os.path.relpath(local_path, local_dir)
         remote_path = REMOTE_ROOT + '/' + rel_path.replace('\\', '/')
         
+        # Ensure remote parent folder exists
+        parent_rel = os.path.dirname(rel_path)
+        if parent_rel:
+            make_remote_dirs(parent_rel.replace('\\', '/'))
+
         with open(local_path, 'rb') as fp:
             ftp.storbinary(f'STOR {remote_path}', fp)
             file_size = os.path.getsize(local_path)

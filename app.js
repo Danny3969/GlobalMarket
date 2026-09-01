@@ -796,6 +796,105 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ==========================================
+  // INTERACTIVE GALLERY & LIGHTBOX VIEWER
+  // ==========================================
+  const galleryItems = Array.from(document.querySelectorAll('.gallery-card'));
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const lightboxModal = document.getElementById('lightboxModal');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxCaption = document.getElementById('lightboxCaption');
+  const lightboxCounter = document.getElementById('lightboxCounter');
+  const lightboxClose = document.getElementById('lightboxClose');
+  const lightboxPrev = document.getElementById('lightboxPrev');
+  const lightboxNext = document.getElementById('lightboxNext');
+
+  let currentGalleryIndex = 0;
+  let activeVisibleItems = galleryItems;
+
+  // Filter functionality
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const cat = btn.getAttribute('data-filter');
+      activeVisibleItems = [];
+
+      galleryItems.forEach(item => {
+        const itemCat = item.getAttribute('data-category');
+        if (cat === 'all' || itemCat === cat) {
+          item.style.display = 'block';
+          activeVisibleItems.push(item);
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Open Lightbox
+  function openLightbox(index) {
+    if (!lightboxModal || activeVisibleItems.length === 0) return;
+    currentGalleryIndex = index;
+    const item = activeVisibleItems[currentGalleryIndex];
+    const fullImgSrc = item.getAttribute('data-src') || item.querySelector('img')?.src;
+    const captionText = item.getAttribute('data-caption') || item.querySelector('h4')?.textContent || 'Pitahaya Red Dragon';
+
+    if (lightboxImg) lightboxImg.src = fullImgSrc;
+    if (lightboxCaption) lightboxCaption.textContent = captionText;
+    if (lightboxCounter) lightboxCounter.textContent = `${currentGalleryIndex + 1} / ${activeVisibleItems.length}`;
+
+    lightboxModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    if (lightboxModal) {
+      lightboxModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function showNextImage() {
+    if (activeVisibleItems.length === 0) return;
+    currentGalleryIndex = (currentGalleryIndex + 1) % activeVisibleItems.length;
+    openLightbox(currentGalleryIndex);
+  }
+
+  function showPrevImage() {
+    if (activeVisibleItems.length === 0) return;
+    currentGalleryIndex = (currentGalleryIndex - 1 + activeVisibleItems.length) % activeVisibleItems.length;
+    openLightbox(currentGalleryIndex);
+  }
+
+  galleryItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const idx = activeVisibleItems.indexOf(item);
+      if (idx !== -1) {
+        openLightbox(idx);
+      }
+    });
+  });
+
+  if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+  if (lightboxNext) lightboxNext.addEventListener('click', (e) => { e.stopPropagation(); showNextImage(); });
+  if (lightboxPrev) lightboxPrev.addEventListener('click', (e) => { e.stopPropagation(); showPrevImage(); });
+
+  if (lightboxModal) {
+    lightboxModal.addEventListener('click', (e) => {
+      if (e.target === lightboxModal) closeLightbox();
+    });
+  }
+
+  // Keyboard navigation for lightbox
+  document.addEventListener('keydown', (e) => {
+    if (!lightboxModal || !lightboxModal.classList.contains('active')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowRight') showNextImage();
+    if (e.key === 'ArrowLeft') showPrevImage();
+  });
+
   // Smooth Header Scroll shadow
   const mainHeader = document.getElementById('mainHeader') || document.getElementById('navbar');
   window.addEventListener('scroll', () => {
@@ -807,4 +906,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+
 
