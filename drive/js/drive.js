@@ -218,6 +218,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Close any open context dropdowns
+  function closeAllDropdownMenus() {
+    document.querySelectorAll('.drive-dropdown-menu.show').forEach(m => m.classList.remove('show'));
+    document.querySelectorAll('.btn-card-menu.active').forEach(b => b.classList.remove('active'));
+  }
+
+  // Global listener to close dropdowns when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.drive-menu-wrapper')) {
+      closeAllDropdownMenus();
+    }
+  });
+
   // Grid View Renderer
   function renderGridView(container, folders, files) {
     const isAdmin = driveState.user.is_admin;
@@ -231,68 +244,96 @@ document.addEventListener('DOMContentLoaded', () => {
       container.appendChild(folderTitle);
 
       const fGrid = document.createElement('div');
-      fGrid.className = 'drive-grid';
+      fGrid.className = 'folders-grid';
 
       folders.forEach(f => {
         const card = document.createElement('div');
-        card.className = 'drive-card';
+        card.className = 'folder-card';
 
         card.innerHTML = `
-          <div class="drive-card-header">
-            <div class="card-icon folder-icon">
-              <i class="fa-solid fa-folder"></i>
+          <div class="folder-card-top">
+            <div class="folder-icon-wrapper">
+              <i class="fa-solid fa-folder folder-icon-main"></i>
+              ${f.is_favorite ? '<i class="fa-solid fa-star folder-fav-star" title="Carpeta Favorita"></i>' : ''}
             </div>
-            <div class="card-quick-actions">
-              <button type="button" class="btn-card-action btn-fav ${f.is_favorite ? 'is-favorite' : ''}" title="${f.is_favorite ? 'Quitar de Favoritos' : 'Añadir a Favoritos'}">
-                <i class="fa-${f.is_favorite ? 'solid' : 'regular'} fa-star"></i>
+            <div class="drive-menu-wrapper">
+              <button type="button" class="btn-card-menu" title="Opciones">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
               </button>
-              ${isAdmin ? `
-                <button type="button" class="btn-card-action btn-rename" title="Renombrar Carpeta">
-                  <i class="fa-solid fa-pen-to-square"></i>
+              <div class="drive-dropdown-menu">
+                <button type="button" class="dropdown-menu-item item-open">
+                  <i class="fa-solid fa-folder-open text-gold"></i> Abrir Carpeta
                 </button>
-              ` : ''}
-              ${(isAdmin || isCollab) ? `
-                <button type="button" class="btn-card-action btn-trash" title="Enviar a la Papelera">
-                  <i class="fa-solid fa-trash-can"></i>
+                <button type="button" class="dropdown-menu-item item-fav">
+                  <i class="fa-${f.is_favorite ? 'solid' : 'regular'} fa-star text-gold"></i> ${f.is_favorite ? 'Quitar de Favoritos' : 'Marcar Favorita'}
                 </button>
-              ` : ''}
+                ${isAdmin ? `
+                  <button type="button" class="dropdown-menu-item item-rename">
+                    <i class="fa-solid fa-pen-to-square" style="color: #60a5fa;"></i> Renombrar
+                  </button>
+                ` : ''}
+                ${(isAdmin || isCollab) ? `
+                  <div class="dropdown-menu-divider"></div>
+                  <button type="button" class="dropdown-menu-item danger item-trash">
+                    <i class="fa-solid fa-trash-can"></i> Enviar a Papelera
+                  </button>
+                ` : ''}
+              </div>
             </div>
           </div>
-          <div class="drive-card-body">
-            <h4 class="card-name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</h4>
-            <div class="card-meta">
-              <span>${f.items_count} elemento${f.items_count === 1 ? '' : 's'}</span>
+          <div class="folder-card-body">
+            <h4 class="folder-name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</h4>
+            <div class="folder-meta">
+              <span><i class="fa-solid fa-box-archive" style="font-size: 0.72rem;"></i> ${f.items_count} elemento${f.items_count === 1 ? '' : 's'}</span>
+              <span>•</span>
               <span>${f.mtime}</span>
             </div>
           </div>
         `;
 
-        // Card Click opens folder
-        card.querySelector('.drive-card-body').addEventListener('click', () => {
-          loadDirectory(f.path);
+        // Open Folder on card body or icon click
+        card.querySelector('.folder-card-body').addEventListener('click', () => loadDirectory(f.path));
+        card.querySelector('.folder-icon-wrapper').addEventListener('click', () => loadDirectory(f.path));
+
+        // 3-Dots Button Toggle
+        const menuBtn = card.querySelector('.btn-card-menu');
+        const menuDropdown = card.querySelector('.drive-dropdown-menu');
+
+        menuBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = menuDropdown.classList.contains('show');
+          closeAllDropdownMenus();
+          if (!isOpen) {
+            menuDropdown.classList.add('show');
+            menuBtn.classList.add('active');
+          }
         });
-        card.querySelector('.card-icon').addEventListener('click', () => {
+
+        // Menu Actions
+        card.querySelector('.item-open').addEventListener('click', (e) => {
+          e.stopPropagation();
+          closeAllDropdownMenus();
           loadDirectory(f.path);
         });
 
-        // Favorite Toggle
-        card.querySelector('.btn-fav').addEventListener('click', (e) => {
+        card.querySelector('.item-fav').addEventListener('click', (e) => {
           e.stopPropagation();
+          closeAllDropdownMenus();
           toggleFavorite(f.path, f.name);
         });
 
-        // Rename
         if (isAdmin) {
-          card.querySelector('.btn-rename').addEventListener('click', (e) => {
+          card.querySelector('.item-rename').addEventListener('click', (e) => {
             e.stopPropagation();
+            closeAllDropdownMenus();
             openRenameModal(f.path, f.name);
           });
         }
 
-        // Trash
         if (isAdmin || isCollab) {
-          card.querySelector('.btn-trash').addEventListener('click', (e) => {
+          card.querySelector('.item-trash').addEventListener('click', (e) => {
             e.stopPropagation();
+            closeAllDropdownMenus();
             moveToTrash(f.path, f.name);
           });
         }
@@ -307,72 +348,106 @@ document.addEventListener('DOMContentLoaded', () => {
     if (files.length > 0) {
       const fileTitle = document.createElement('h4');
       fileTitle.className = 'section-title';
-      fileTitle.style.marginTop = folders.length > 0 ? '2rem' : '0';
+      fileTitle.style.marginTop = folders.length > 0 ? '2.5rem' : '0';
       fileTitle.innerHTML = `<i class="fa-solid fa-file"></i> Archivos (${files.length})`;
       container.appendChild(fileTitle);
 
       const fGrid = document.createElement('div');
-      fGrid.className = 'drive-grid';
+      fGrid.className = 'files-grid';
 
       files.forEach(file => {
         const card = document.createElement('div');
-        card.className = 'drive-card';
+        card.className = 'file-card';
 
         card.innerHTML = `
-          <div class="drive-card-header">
-            <div class="card-icon file-icon" style="color: ${file.color};">
-              <i class="fa-solid ${file.icon}"></i>
-            </div>
-            <div class="card-quick-actions">
-              ${file.previewable ? `
-                <button type="button" class="btn-card-action btn-preview" title="Previsualizar">
-                  <i class="fa-solid fa-eye"></i>
-                </button>
-              ` : ''}
-              <a href="api.php?action=download&path=${encodeURIComponent(file.path)}" class="btn-card-action" title="Descargar">
-                <i class="fa-solid fa-download"></i>
-              </a>
-              ${isAdmin ? `
-                <button type="button" class="btn-card-action btn-rename" title="Renombrar Archivo">
-                  <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-              ` : ''}
-              ${(isAdmin || isCollab) ? `
-                <button type="button" class="btn-card-action btn-trash" title="Enviar a la Papelera">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-              ` : ''}
+          <div class="file-card-top">
+            <span class="file-type-pill" style="color: ${file.color}; border: 1px solid ${file.color}40;">
+              <i class="fa-solid ${file.icon}"></i> ${escapeHtml(file.ext.toUpperCase())}
+            </span>
+            <div class="drive-menu-wrapper">
+              <button type="button" class="btn-card-menu" title="Opciones">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+              </button>
+              <div class="drive-dropdown-menu">
+                ${file.previewable ? `
+                  <button type="button" class="dropdown-menu-item item-preview">
+                    <i class="fa-solid fa-eye text-gold"></i> Previsualizar
+                  </button>
+                ` : ''}
+                <a href="api.php?action=download&path=${encodeURIComponent(file.path)}" class="dropdown-menu-item item-download">
+                  <i class="fa-solid fa-download" style="color: var(--success);"></i> Descargar
+                </a>
+                ${isAdmin ? `
+                  <button type="button" class="dropdown-menu-item item-rename">
+                    <i class="fa-solid fa-pen-to-square" style="color: #60a5fa;"></i> Renombrar
+                  </button>
+                ` : ''}
+                ${(isAdmin || isCollab) ? `
+                  <div class="dropdown-menu-divider"></div>
+                  <button type="button" class="dropdown-menu-item danger item-trash">
+                    <i class="fa-solid fa-trash-can"></i> Enviar a Papelera
+                  </button>
+                ` : ''}
+              </div>
             </div>
           </div>
-          <div class="drive-card-body">
-            <h4 class="card-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</h4>
-            <div class="card-meta">
+          <div class="file-preview-area">
+            <i class="fa-solid ${file.icon} file-preview-icon" style="color: ${file.color};"></i>
+          </div>
+          <div class="file-card-body">
+            <h4 class="file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</h4>
+            <div class="file-meta">
               <span>${file.size_formatted}</span>
               <span>${file.mtime}</span>
             </div>
           </div>
         `;
 
-        if (file.previewable) {
-          card.querySelector('.drive-card-body').addEventListener('click', () => {
+        const openAction = () => {
+          if (file.previewable) {
             openPreview(file);
-          });
-          card.querySelector('.btn-preview').addEventListener('click', (e) => {
+          } else {
+            window.location.href = `api.php?action=download&path=${encodeURIComponent(file.path)}`;
+          }
+        };
+
+        card.querySelector('.file-preview-area').addEventListener('click', openAction);
+        card.querySelector('.file-card-body').addEventListener('click', openAction);
+
+        // 3-Dots Button Toggle
+        const menuBtn = card.querySelector('.btn-card-menu');
+        const menuDropdown = card.querySelector('.drive-dropdown-menu');
+
+        menuBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = menuDropdown.classList.contains('show');
+          closeAllDropdownMenus();
+          if (!isOpen) {
+            menuDropdown.classList.add('show');
+            menuBtn.classList.add('active');
+          }
+        });
+
+        if (file.previewable) {
+          card.querySelector('.item-preview').addEventListener('click', (e) => {
             e.stopPropagation();
+            closeAllDropdownMenus();
             openPreview(file);
           });
         }
 
         if (isAdmin) {
-          card.querySelector('.btn-rename').addEventListener('click', (e) => {
+          card.querySelector('.item-rename').addEventListener('click', (e) => {
             e.stopPropagation();
+            closeAllDropdownMenus();
             openRenameModal(file.path, file.name);
           });
         }
 
         if (isAdmin || isCollab) {
-          card.querySelector('.btn-trash').addEventListener('click', (e) => {
+          card.querySelector('.item-trash').addEventListener('click', (e) => {
             e.stopPropagation();
+            closeAllDropdownMenus();
             moveToTrash(file.path, file.name);
           });
         }
@@ -402,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <th>Tipo / Elementos</th>
           <th>Tamaño</th>
           <th>Última Modificación</th>
-          <th style="text-align: right;">Acciones</th>
+          <th style="text-align: right; width: 80px;">Opciones</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -416,51 +491,81 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.innerHTML = `
         <td style="cursor: pointer;">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <i class="fa-solid fa-folder text-gold" style="font-size: 1.25rem;"></i>
+            <i class="fa-solid fa-folder text-gold" style="font-size: 1.35rem;"></i>
             <span style="font-weight: 600; color: #ffffff;">${escapeHtml(f.name)}</span>
+            ${f.is_favorite ? '<i class="fa-solid fa-star text-gold" style="font-size: 0.8rem;" title="Favorita"></i>' : ''}
           </div>
         </td>
-        <td>Carpeta de Archivos (${f.items_count} items)</td>
+        <td>Carpeta (${f.items_count} items)</td>
         <td>—</td>
         <td>${f.mtime}</td>
         <td style="text-align: right;">
-          <div style="display: inline-flex; gap: 0.35rem;">
-            <button type="button" class="btn-card-action btn-fav ${f.is_favorite ? 'is-favorite' : ''}" title="${f.is_favorite ? 'Quitar de Favoritos' : 'Añadir a Favoritos'}">
-              <i class="fa-${f.is_favorite ? 'solid' : 'regular'} fa-star"></i>
+          <div class="drive-menu-wrapper" style="display: inline-block;">
+            <button type="button" class="btn-card-menu" title="Opciones">
+              <i class="fa-solid fa-ellipsis-vertical"></i>
             </button>
-            ${isAdmin ? `
-              <button type="button" class="btn-card-action btn-rename" title="Renombrar">
-                <i class="fa-solid fa-pen-to-square"></i>
+            <div class="drive-dropdown-menu">
+              <button type="button" class="dropdown-menu-item item-open">
+                <i class="fa-solid fa-folder-open text-gold"></i> Abrir Carpeta
               </button>
-            ` : ''}
-            ${(isAdmin || isCollab) ? `
-              <button type="button" class="btn-card-action btn-trash" title="Enviar a la Papelera">
-                <i class="fa-solid fa-trash-can"></i>
+              <button type="button" class="dropdown-menu-item item-fav">
+                <i class="fa-${f.is_favorite ? 'solid' : 'regular'} fa-star text-gold"></i> ${f.is_favorite ? 'Quitar de Favoritos' : 'Marcar Favorita'}
               </button>
-            ` : ''}
+              ${isAdmin ? `
+                <button type="button" class="dropdown-menu-item item-rename">
+                  <i class="fa-solid fa-pen-to-square" style="color: #60a5fa;"></i> Renombrar
+                </button>
+              ` : ''}
+              ${(isAdmin || isCollab) ? `
+                <div class="dropdown-menu-divider"></div>
+                <button type="button" class="dropdown-menu-item danger item-trash">
+                  <i class="fa-solid fa-trash-can"></i> Enviar a Papelera
+                </button>
+              ` : ''}
+            </div>
           </div>
         </td>
       `;
 
-      tr.querySelector('td:first-child').addEventListener('click', () => {
+      tr.querySelector('td:first-child').addEventListener('click', () => loadDirectory(f.path));
+
+      const menuBtn = tr.querySelector('.btn-card-menu');
+      const menuDropdown = tr.querySelector('.drive-dropdown-menu');
+
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = menuDropdown.classList.contains('show');
+        closeAllDropdownMenus();
+        if (!isOpen) {
+          menuDropdown.classList.add('show');
+          menuBtn.classList.add('active');
+        }
+      });
+
+      tr.querySelector('.item-open').addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeAllDropdownMenus();
         loadDirectory(f.path);
       });
 
-      tr.querySelector('.btn-fav').addEventListener('click', (e) => {
+      tr.querySelector('.item-fav').addEventListener('click', (e) => {
         e.stopPropagation();
+        closeAllDropdownMenus();
         toggleFavorite(f.path, f.name);
       });
 
       if (isAdmin) {
-        tr.querySelector('.btn-rename').addEventListener('click', (e) => {
+        tr.querySelector('.item-rename').addEventListener('click', (e) => {
           e.stopPropagation();
+          closeAllDropdownMenus();
           openRenameModal(f.path, f.name);
         });
       }
 
       if (isAdmin || isCollab) {
-        tr.querySelector('.btn-trash').addEventListener('click', (e) => {
+        tr.querySelector('.item-trash').addEventListener('click', (e) => {
           e.stopPropagation();
+          closeAllDropdownMenus();
           moveToTrash(f.path, f.name);
         });
       }
@@ -482,49 +587,73 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${file.size_formatted}</td>
         <td>${file.mtime}</td>
         <td style="text-align: right;">
-          <div style="display: inline-flex; gap: 0.35rem;">
-            ${file.previewable ? `
-              <button type="button" class="btn-card-action btn-preview" title="Previsualizar">
-                <i class="fa-solid fa-eye"></i>
-              </button>
-            ` : ''}
-            <a href="api.php?action=download&path=${encodeURIComponent(file.path)}" class="btn-card-action" title="Descargar">
-              <i class="fa-solid fa-download"></i>
-            </a>
-            ${isAdmin ? `
-              <button type="button" class="btn-card-action btn-rename" title="Renombrar">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-            ` : ''}
-            ${(isAdmin || isCollab) ? `
-              <button type="button" class="btn-card-action btn-trash" title="Enviar a la Papelera">
-                <i class="fa-solid fa-trash-can"></i>
-              </button>
-            ` : ''}
+          <div class="drive-menu-wrapper" style="display: inline-block;">
+            <button type="button" class="btn-card-menu" title="Opciones">
+              <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+            <div class="drive-dropdown-menu">
+              ${file.previewable ? `
+                <button type="button" class="dropdown-menu-item item-preview">
+                  <i class="fa-solid fa-eye text-gold"></i> Previsualizar
+                </button>
+              ` : ''}
+              <a href="api.php?action=download&path=${encodeURIComponent(file.path)}" class="dropdown-menu-item item-download">
+                <i class="fa-solid fa-download" style="color: var(--success);"></i> Descargar
+              </a>
+              ${isAdmin ? `
+                <button type="button" class="dropdown-menu-item item-rename">
+                  <i class="fa-solid fa-pen-to-square" style="color: #60a5fa;"></i> Renombrar
+                </button>
+              ` : ''}
+              ${(isAdmin || isCollab) ? `
+                <div class="dropdown-menu-divider"></div>
+                <button type="button" class="dropdown-menu-item danger item-trash">
+                  <i class="fa-solid fa-trash-can"></i> Enviar a Papelera
+                </button>
+              ` : ''}
+            </div>
           </div>
         </td>
       `;
 
+      const openAction = () => {
+        if (file.previewable) openPreview(file);
+      };
+      tr.querySelector('td:first-child').addEventListener('click', openAction);
+
+      const menuBtn = tr.querySelector('.btn-card-menu');
+      const menuDropdown = tr.querySelector('.drive-dropdown-menu');
+
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = menuDropdown.classList.contains('show');
+        closeAllDropdownMenus();
+        if (!isOpen) {
+          menuDropdown.classList.add('show');
+          menuBtn.classList.add('active');
+        }
+      });
+
       if (file.previewable) {
-        tr.querySelector('td:first-child').addEventListener('click', () => {
-          openPreview(file);
-        });
-        tr.querySelector('.btn-preview').addEventListener('click', (e) => {
+        tr.querySelector('.item-preview').addEventListener('click', (e) => {
           e.stopPropagation();
+          closeAllDropdownMenus();
           openPreview(file);
         });
       }
 
       if (isAdmin) {
-        tr.querySelector('.btn-rename').addEventListener('click', (e) => {
+        tr.querySelector('.item-rename').addEventListener('click', (e) => {
           e.stopPropagation();
+          closeAllDropdownMenus();
           openRenameModal(file.path, file.name);
         });
       }
 
       if (isAdmin || isCollab) {
-        tr.querySelector('.btn-trash').addEventListener('click', (e) => {
+        tr.querySelector('.item-trash').addEventListener('click', (e) => {
           e.stopPropagation();
+          closeAllDropdownMenus();
           moveToTrash(file.path, file.name);
         });
       }
