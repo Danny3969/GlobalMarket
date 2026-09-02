@@ -1037,20 +1037,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // =========================================================================
+  // 12. NEW FOLDER MODAL
+  // =========================================================================
   const btnNewFolder = document.getElementById('btnNewFolder');
   const folderModal = document.getElementById('folderModal');
   const btnCloseFolder = document.getElementById('btnCloseFolderModal');
   const formFolder = document.getElementById('formNewFolder');
 
-  if (btnNewFolder && folderModal) {
-    btnNewFolder.addEventListener('click', () => {
-      folderModal.classList.add('active');
-      document.getElementById('newFolderName').value = '';
-      setTimeout(() => document.getElementById('newFolderName').focus(), 100);
-    });
+  function openFolderModal() {
+    if (!folderModal) return;
+    folderModal.classList.add('show', 'active');
+    document.getElementById('newFolderName').value = '';
+    setTimeout(() => document.getElementById('newFolderName').focus(), 100);
+  }
 
-    btnCloseFolder.addEventListener('click', () => {
-      folderModal.classList.remove('active');
+  function closeFolderModal() {
+    if (!folderModal) return;
+    folderModal.classList.remove('show', 'active');
+  }
+
+  if (btnNewFolder && folderModal) {
+    btnNewFolder.addEventListener('click', openFolderModal);
+    if (btnCloseFolder) btnCloseFolder.addEventListener('click', closeFolderModal);
+    folderModal.addEventListener('click', (e) => {
+      if (e.target === folderModal) closeFolderModal();
     });
 
     formFolder.addEventListener('submit', async (e) => {
@@ -1067,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         if (data.success) {
-          folderModal.classList.remove('active');
+          closeFolderModal();
           showToast('Carpeta creada con éxito');
           loadDirectory(driveState.currentPath);
         } else {
@@ -1102,14 +1113,26 @@ document.addEventListener('DOMContentLoaded', () => {
       body.innerHTML = `<iframe src="api.php?action=view&path=${encodeURIComponent(file.path)}" class="preview-iframe"></iframe>`;
     }
 
-    modal.classList.add('active');
+    modal.classList.add('show', 'active');
   }
 
-  document.getElementById('btnClosePreview').addEventListener('click', () => {
+  function closePreviewModal() {
     const modal = document.getElementById('previewModal');
-    modal.classList.remove('active');
+    if (!modal) return;
+    modal.classList.remove('show', 'active');
     document.getElementById('previewModalBody').innerHTML = '';
-  });
+  }
+
+  const btnClosePreview = document.getElementById('btnClosePreview');
+  if (btnClosePreview) {
+    btnClosePreview.addEventListener('click', closePreviewModal);
+  }
+  const previewModalEl = document.getElementById('previewModal');
+  if (previewModalEl) {
+    previewModalEl.addEventListener('click', (e) => {
+      if (e.target === previewModalEl) closePreviewModal();
+    });
+  }
 
   // =========================================================================
   // 14. VIEW TOGGLE (GRID / LIST)
@@ -1143,60 +1166,94 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // 16. SIDEBAR NAVIGATION
   // =========================================================================
-  document.getElementById('sidebarNavRoot').addEventListener('click', (e) => {
-    e.preventDefault();
-    loadDirectory('GlobalMarket');
-  });
+  const navRoot = document.getElementById('sidebarNavRoot');
+  if (navRoot) {
+    navRoot.addEventListener('click', (e) => {
+      e.preventDefault();
+      loadDirectory('GlobalMarket');
+    });
+  }
 
-  document.getElementById('sidebarNavTrash').addEventListener('click', (e) => {
-    e.preventDefault();
-    loadTrashView();
-  });
+  const navTrash = document.getElementById('sidebarNavTrash');
+  if (navTrash) {
+    navTrash.addEventListener('click', (e) => {
+      e.preventDefault();
+      loadTrashView();
+    });
+  }
 
   // =========================================================================
-  // 17. USER MANAGEMENT MODAL (ADMIN)
+  // 17. USER MANAGEMENT MODAL (ADMIN & SUPERADMIN)
   // =========================================================================
   const btnManageUsers = document.getElementById('btnManageUsers');
+  const sidebarBtnUsers = document.getElementById('sidebarBtnUsers');
   const usersModal = document.getElementById('usersModal');
   const btnCloseUsers = document.getElementById('btnCloseUsersModal');
 
-  if (btnManageUsers && usersModal) {
-    btnManageUsers.addEventListener('click', () => {
-      usersModal.classList.add('active');
-      loadUsersList();
-    });
+  function openUsersModal() {
+    if (!usersModal) return;
+    usersModal.classList.add('show', 'active');
+    loadUsersList();
+  }
 
-    btnCloseUsers.addEventListener('click', () => {
-      usersModal.classList.remove('active');
-    });
+  function closeUsersModal() {
+    if (!usersModal) return;
+    usersModal.classList.remove('show', 'active');
+  }
 
-    document.getElementById('formCreateUser').addEventListener('submit', async (e) => {
+  if (btnManageUsers) {
+    btnManageUsers.addEventListener('click', (e) => {
       e.preventDefault();
-      const name = document.getElementById('newUserName').value.trim();
-      const username = document.getElementById('newUserUsername').value.trim();
-      const email = document.getElementById('newUserEmail').value.trim();
-      const password = document.getElementById('newUserPassword').value.trim();
-      const role = document.getElementById('newUserRole').value;
-
-      try {
-        const res = await fetch('api.php?action=create_user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, username, email, password, role })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          showToast(data.message || 'Usuario registrado con éxito');
-          document.getElementById('formCreateUser').reset();
-          loadUsersList();
-        } else {
-          showToast(data.error || 'Error al crear usuario', true);
-        }
-      } catch (err) {
-        showToast('Error de conexión', true);
-      }
+      openUsersModal();
     });
+  }
+
+  if (sidebarBtnUsers) {
+    sidebarBtnUsers.addEventListener('click', (e) => {
+      e.preventDefault();
+      openUsersModal();
+    });
+  }
+
+  if (btnCloseUsers) {
+    btnCloseUsers.addEventListener('click', closeUsersModal);
+  }
+
+  if (usersModal) {
+    usersModal.addEventListener('click', (e) => {
+      if (e.target === usersModal) closeUsersModal();
+    });
+
+    const formCreate = document.getElementById('formCreateUser');
+    if (formCreate) {
+      formCreate.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('newUserName').value.trim();
+        const username = document.getElementById('newUserUsername').value.trim();
+        const email = document.getElementById('newUserEmail').value.trim();
+        const password = document.getElementById('newUserPassword').value.trim();
+        const role = document.getElementById('newUserRole').value;
+
+        try {
+          const res = await fetch('api.php?action=create_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, username, email, password, role })
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            showToast(data.message || 'Usuario registrado con éxito');
+            formCreate.reset();
+            loadUsersList();
+          } else {
+            showToast(data.error || 'Error al crear usuario', true);
+          }
+        } catch (err) {
+          showToast('Error de conexión', true);
+        }
+      });
+    }
   }
 
   async function loadUsersList() {
@@ -1215,9 +1272,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const isMe = u.username === driveState.user.name || u.id === (driveState.user.id || '');
           const roleLabels = {
             superadmin: '<span class="user-role-badge badge-superadmin"><i class="fa-solid fa-crown"></i> Superadmin</span>',
-            admin: '<span class="user-role-badge badge-admin">Admin</span>',
-            collab: '<span class="user-role-badge badge-collab">Colaborador</span>',
-            client: '<span class="user-role-badge badge-client">Cliente</span>'
+            admin: '<span class="user-role-badge badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span>',
+            collab: '<span class="user-role-badge badge-collab"><i class="fa-solid fa-pen-ruler"></i> Colaborador</span>',
+            client: '<span class="user-role-badge badge-client"><i class="fa-solid fa-user"></i> Cliente</span>'
           };
 
           tr.innerHTML = `
@@ -1244,14 +1301,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
           tbody.appendChild(tr);
         });
+      } else {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">${escapeHtml(data.error || 'Error al cargar usuarios')}</td></tr>`;
       }
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ef4444;">Error al cargar usuarios</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ef4444;">Error de conexión al cargar usuarios</td></tr>';
     }
   }
 
   async function deleteUser(id, name) {
-    if (!confirm(`¿Eliminar al usuario "${name}"?`)) return;
+    if (!confirm(`¿Eliminar permanentemente al usuario "${name}"?`)) return;
 
     try {
       const res = await fetch('api.php?action=delete_user', {
@@ -1268,9 +1327,20 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(data.error || 'Error al eliminar usuario', true);
       }
     } catch (e) {
-      showToast('Error de conexión', true);
+      showToast('Error de conexión al eliminar usuario', true);
     }
   }
+
+  // Global Keydown for Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeFolderModal();
+      closeRenameModal();
+      closePreviewModal();
+      closeUsersModal();
+      closeAllDropdownMenus();
+    }
+  });
 
   // Escape HTML Helper
   function escapeHtml(str) {

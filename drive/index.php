@@ -227,6 +227,13 @@ $initialPayload = [
           <span>Correos Webmail</span>
         </a>
 
+        <?php if ($isAdmin): ?>
+          <a href="#" class="sidebar-link" id="sidebarBtnUsers" title="Gestor de Usuarios y Roles del Drive">
+            <i class="fa-solid fa-users-gear text-gold"></i>
+            <span>Gestión de Usuarios</span>
+          </a>
+        <?php endif; ?>
+
         <!-- EXCLUSIVO PARA SUPERADMIN -->
         <?php if ($isSuperAdmin): ?>
           <a href="../admin/index.php" target="_blank" class="sidebar-link" title="Consola CMS del Sitio Web">
@@ -386,48 +393,48 @@ $initialPayload = [
   <?php if ($isAdmin): ?>
     <!-- MODAL: GESTOR DE USUARIOS Y ROLES (Admin) -->
     <div class="drive-modal" id="usersModal">
-      <div class="modal-content" style="max-width: 750px;">
+      <div class="modal-content users-modal-content">
         <div class="modal-header">
-          <h3><i class="fa-solid fa-users-gear text-gold"></i> Gestión de Usuarios & Roles del Drive</h3>
+          <h3><i class="fa-solid fa-users-gear text-gold"></i> Gestión de Usuarios & Roles</h3>
           <button type="button" class="btn-modal-close" id="btnCloseUsersModal">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
         <!-- FORMULARIO CREAR USUARIO -->
-        <form id="formCreateUser" style="background: rgba(0,0,0,0.3); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--drive-card-border); margin-bottom: 1.5rem;">
-          <h4 style="font-size: 0.95rem; color: #ffffff; margin-bottom: 0.85rem;"><i class="fa-solid fa-user-plus text-gold"></i> Agregar Nuevo Usuario</h4>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
-            <input type="text" id="newUserName" class="form-control" placeholder="Nombre Completo / Empresa *" required>
-            <input type="text" id="newUserUsername" class="form-control" placeholder="Nombre de Usuario *" required>
-            <input type="email" id="newUserEmail" class="form-control" placeholder="Correo Electrónico">
-            <input type="password" id="newUserPassword" class="form-control" placeholder="Contraseña *" required minlength="6">
+        <form id="formCreateUser" class="user-create-box">
+          <h4 class="user-create-title"><i class="fa-solid fa-user-plus text-gold"></i> Registrar Nuevo Usuario</h4>
+          <div class="user-fields-grid">
+            <input type="text" id="newUserName" class="form-control" placeholder="Nombre Completo / Empresa *" required autocomplete="off">
+            <input type="text" id="newUserUsername" class="form-control" placeholder="Nombre de Usuario (Login) *" required autocomplete="off">
+            <input type="email" id="newUserEmail" class="form-control" placeholder="Correo Electrónico (Opcional)" autocomplete="off">
+            <input type="password" id="newUserPassword" class="form-control" placeholder="Contraseña *" required minlength="6" autocomplete="new-password">
           </div>
-          <div style="display: flex; gap: 0.75rem; align-items: center;">
-            <select id="newUserRole" class="form-select" style="max-width: 250px;">
-              <option value="client">Rol: Cliente (Solo ver y descargar)</option>
-              <option value="collab">Rol: Colaborador (Ver, subir y editar)</option>
-              <option value="admin">Rol: Administrador (Gestión total)</option>
+          <div class="user-actions-row">
+            <select id="newUserRole" class="form-select" style="max-width: 320px;">
+              <option value="client">👤 Rol: Cliente (Solo ver y descargar)</option>
+              <option value="collab">✍️ Rol: Colaborador (Ver, subir y editar)</option>
+              <option value="admin">🛡️ Rol: Administrador (Gestión total)</option>
               <?php if ($isSuperAdmin): ?>
-                <option value="superadmin">Rol: Super Administrador (Control absoluto)</option>
+                <option value="superadmin">👑 Rol: Super Administrador (Control total + Web)</option>
               <?php endif; ?>
             </select>
             <button type="submit" class="btn btn-primary" style="flex: 1;">
-              <i class="fa-solid fa-plus"></i> Registrar Usuario
+              <i class="fa-solid fa-user-plus"></i> Crear Usuario
             </button>
           </div>
         </form>
 
         <!-- TABLA DE USUARIOS -->
-        <div style="max-height: 260px; overflow-y: auto;">
+        <div class="users-table-container">
           <table class="drive-list-table">
             <thead>
               <tr>
                 <th>Usuario</th>
                 <th>Rol</th>
                 <th>Email</th>
-                <th>Creado</th>
-                <th style="text-align: right;">Acciones</th>
+                <th>Fecha Creación</th>
+                <th style="text-align: right; width: 90px;">Acciones</th>
               </tr>
             </thead>
             <tbody id="usersTableBody">

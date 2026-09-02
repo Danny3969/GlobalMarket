@@ -818,34 +818,42 @@ body {
 }
 
 /* ==========================================================================
-   MODALS (Preview, New Folder, Users)
+   MODALS (Preview, New Folder, Rename, Users)
    ========================================================================== */
 .drive-modal {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   padding: 1.5rem;
 }
 
-.drive-modal.show {
-  display: flex;
+.drive-modal.show,
+.drive-modal.active {
+  display: flex !important;
   animation: fadeIn 0.2s ease;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .modal-content {
-  background: var(--drive-card-bg);
-  border: 1px solid var(--drive-card-border);
+  background: #0d1a14;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-lg);
-  padding: 2rem;
+  padding: 2.25rem 2rem;
   width: 100%;
   max-width: 520px;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
   position: relative;
+  z-index: 10001;
 }
 
 .modal-header {
@@ -853,25 +861,99 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .modal-header h3 {
   font-family: var(--font-heading);
   font-size: 1.35rem;
   color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
 }
 
 .btn-modal-close {
-  background: transparent;
-  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-muted);
-  font-size: 1.25rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.2s;
 }
 
 .btn-modal-close:hover {
+  background: rgba(239, 68, 68, 0.2);
   color: #ffffff;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* User Modal */
+.users-modal-content {
+  max-width: 780px !important;
+  width: 95vw;
+}
+
+.user-create-box {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1.5rem;
+}
+
+.user-create-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+@media (max-width: 600px) {
+  .user-fields-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.user-actions-row {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .user-actions-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .user-actions-row select {
+    max-width: 100% !important;
+  }
+}
+
+.users-table-container {
+  max-height: 280px;
+  overflow-y: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Preview Modal Wide */
