@@ -790,7 +790,12 @@ switch ($action) {
         $role = trim($data['role'] ?? 'client');
 
         if (empty($username) || empty($password) || empty($name)) {
-            echo json_encode(['success' => false, 'error' => 'Todos los campos obligatorios deben completarse']);
+            echo json_encode(['success' => false, 'error' => 'Nombre, usuario y contraseña son obligatorios']);
+            exit;
+        }
+
+        if (strlen($password) < 6) {
+            echo json_encode(['success' => false, 'error' => 'La contraseña debe tener al menos 6 caracteres']);
             exit;
         }
 
@@ -802,8 +807,8 @@ switch ($action) {
 
         $users = get_drive_users();
         foreach ($users as $u) {
-            if ($u['username'] === $username) {
-                echo json_encode(['success' => false, 'error' => 'El nombre de usuario ya existe']);
+            if (strtolower($u['username']) === strtolower($username)) {
+                echo json_encode(['success' => false, 'error' => 'El nombre de usuario ya está registrado']);
                 exit;
             }
         }
@@ -824,6 +829,84 @@ switch ($action) {
         save_drive_users($users);
 
         echo json_encode(['success' => true, 'message' => 'Usuario registrado con éxito']);
+        break;
+
+    case 'update_user':
+        header('Content-Type: application/json');
+        if (!$isAdmin) {
+            echo json_encode(['success' => false, 'error' => 'Permiso denegado']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $userId = trim($data['id'] ?? '');
+        $username = trim($data['username'] ?? '');
+        $name = trim($data['name'] ?? '');
+        $email = trim($data['email'] ?? '');
+        $role = trim($data['role'] ?? '');
+        $password = trim($data['password'] ?? '');
+
+        if (empty($userId) || empty($username) || empty($name)) {
+            echo json_encode(['success' => false, 'error' => 'Nombre y Nombre de Usuario son obligatorios']);
+            exit;
+        }
+
+        $users = get_drive_users();
+        $updated = false;
+
+        // Check if username belongs to another user
+        foreach ($users as $u) {
+            if (strtolower($u['username']) === strtolower($username) && $u['id'] !== $userId) {
+                echo json_encode(['success' => false, 'error' => 'Ese nombre de usuario ya pertenece a otra cuenta']);
+                exit;
+            }
+        }
+
+        foreach ($users as &$u) {
+            if ($u['id'] === $userId) {
+                // If target user is superadmin and caller is not superadmin, block
+                if ($u['role'] === 'superadmin' && !$isSuperAdmin) {
+                    echo json_encode(['success' => false, 'error' => 'Solo el Super Administrador puede editar esta cuenta']);
+                    exit;
+                }
+
+                // If role changed to/from superadmin or admin, check permission
+                if (!empty($role) && $role !== $u['role']) {
+                    if (($role === 'superadmin' || $u['role'] === 'superadmin' || $role === 'admin') && !$isSuperAdmin) {
+                        echo json_encode(['success' => false, 'error' => 'Solo el Super Administrador puede asignar o cambiar este rol']);
+                        exit;
+                    }
+                    if (in_array($role, ['superadmin', 'admin', 'client', 'collab'])) {
+                        $u['role'] = $role;
+                    }
+                }
+
+                $u['name'] = $name;
+                $u['username'] = $username;
+                $u['email'] = $email;
+
+                // Update password if provided
+                if (!empty($password)) {
+                    if (strlen($password) < 6) {
+                        echo json_encode(['success' => false, 'error' => 'La nueva contraseña debe tener al menos 6 caracteres']);
+                        exit;
+                    }
+                    $u['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+                }
+
+                $u['updated_at'] = date('Y-m-d H:i:s');
+                $updated = true;
+                break;
+            }
+        }
+        unset($u);
+
+        if ($updated) {
+            save_drive_users($users);
+            echo json_encode(['success' => true, 'message' => 'Usuario actualizado con éxito']);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Usuario no encontrado']);
+        }
         break;
 
     case 'delete_user':
@@ -847,8 +930,8 @@ switch ($action) {
 
         foreach ($users as $u) {
             if ($u['id'] === $userId) {
-                if ($u['role'] === 'superadmin' && !$isSuperAdmin) {
-                    echo json_encode(['success' => false, 'error' => 'No puedes eliminar a un Super Administrador']);
+                if ($u['role'] === 'superadmin') {
+                    echo json_encode(['success' => false, 'error' => 'No se puede eliminar la cuenta del Super Administrador']);
                     exit;
                 }
                 $found = true;
@@ -859,7 +942,7 @@ switch ($action) {
 
         if ($found) {
             save_drive_users($newUsers);
-            echo json_encode(['success' => true, 'message' => 'Usuario eliminado']);
+            echo json_encode(['success' => true, 'message' => 'Usuario eliminado permanentemente']);
         } else {
             echo json_encode(['success' => false, 'error' => 'Usuario no encontrado']);
         }

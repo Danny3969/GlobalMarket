@@ -391,57 +391,154 @@ $initialPayload = [
   </div>
 
   <?php if ($isAdmin): ?>
-    <!-- MODAL: GESTOR DE USUARIOS Y ROLES (Admin) -->
+    <!-- MODAL: GESTOR DE USUARIOS & ROLES (SaaS Tabs) -->
     <div class="drive-modal" id="usersModal">
       <div class="modal-content users-modal-content">
-        <div class="modal-header">
-          <h3><i class="fa-solid fa-users-gear text-gold"></i> Gestión de Usuarios & Roles</h3>
-          <button type="button" class="btn-modal-close" id="btnCloseUsersModal">
+        
+        <!-- Header -->
+        <div class="modal-header-users">
+          <div class="modal-title-group">
+            <h3><i class="fa-solid fa-users-gear text-gold"></i> Control de Usuarios & Permisos</h3>
+            <p class="modal-subtitle">Administra los accesos, roles y credenciales de seguridad de GlobalMarket Drive</p>
+          </div>
+          <button type="button" class="btn-modal-close" id="btnCloseUsersModal" title="Cerrar ventana">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
 
-        <!-- FORMULARIO CREAR USUARIO -->
-        <form id="formCreateUser" class="user-create-box">
-          <h4 class="user-create-title"><i class="fa-solid fa-user-plus text-gold"></i> Registrar Nuevo Usuario</h4>
-          <div class="user-fields-grid">
-            <input type="text" id="newUserName" class="form-control" placeholder="Nombre Completo / Empresa *" required autocomplete="off">
-            <input type="text" id="newUserUsername" class="form-control" placeholder="Nombre de Usuario (Login) *" required autocomplete="off">
-            <input type="email" id="newUserEmail" class="form-control" placeholder="Correo Electrónico (Opcional)" autocomplete="off">
-            <input type="password" id="newUserPassword" class="form-control" placeholder="Contraseña *" required minlength="6" autocomplete="new-password">
-          </div>
-          <div class="user-actions-row">
-            <select id="newUserRole" class="form-select" style="max-width: 320px;">
-              <option value="client">👤 Rol: Cliente (Solo ver y descargar)</option>
-              <option value="collab">✍️ Rol: Colaborador (Ver, subir y editar)</option>
-              <option value="admin">🛡️ Rol: Administrador (Gestión total)</option>
-              <?php if ($isSuperAdmin): ?>
-                <option value="superadmin">👑 Rol: Super Administrador (Control total + Web)</option>
-              <?php endif; ?>
-            </select>
-            <button type="submit" class="btn btn-primary" style="flex: 1;">
-              <i class="fa-solid fa-user-plus"></i> Crear Usuario
+        <!-- Navigation Tabs -->
+        <div class="modal-nav-tabs">
+          <button type="button" class="modal-tab-btn active" data-tab="tabUsersList" id="tabBtnList">
+            <i class="fa-solid fa-users"></i> Directorio de Usuarios (<span id="usersCountBadge">0</span>)
+          </button>
+          <button type="button" class="modal-tab-btn" data-tab="tabCreateUser" id="tabBtnCreate">
+            <i class="fa-solid fa-user-plus"></i> + Registrar Nuevo Usuario
+          </button>
+          <button type="button" class="modal-tab-btn" data-tab="tabEditUser" id="tabBtnEdit" style="display: none;">
+            <i class="fa-solid fa-user-pen"></i> Editar Usuario
+          </button>
+        </div>
+
+        <!-- TAB 1: LISTADO / DIRECTORIO DE USUARIOS -->
+        <div class="tab-pane active" id="tabUsersList">
+          <div class="users-toolbar">
+            <div class="users-search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="searchUserInput" class="users-search-input" placeholder="Buscar por nombre, usuario o email...">
+            </div>
+            <button type="button" class="btn btn-gold btn-sm" id="btnGoToCreateUser">
+              <i class="fa-solid fa-plus"></i> Nuevo Usuario
             </button>
           </div>
-        </form>
 
-        <!-- TABLA DE USUARIOS -->
-        <div class="users-table-container">
-          <table class="drive-list-table">
-            <thead>
-              <tr>
-                <th>Usuario</th>
-                <th>Rol</th>
-                <th>Email</th>
-                <th>Fecha Creación</th>
-                <th style="text-align: right; width: 90px;">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="usersTableBody">
-              <!-- Se llena dinámicamente con JS -->
-            </tbody>
-          </table>
+          <div class="users-cards-list" id="usersCardsContainer">
+            <!-- Renderizado dinámico de tarjetas de usuario -->
+          </div>
         </div>
+
+        <!-- TAB 2: REGISTRAR NUEVO USUARIO -->
+        <div class="tab-pane" id="tabCreateUser">
+          <form id="formCreateUser" class="user-form-wrapper">
+            <div class="form-grid-2col">
+              <div class="form-group-item">
+                <label><i class="fa-solid fa-id-card text-gold"></i> Nombre Completo / Empresa *</label>
+                <input type="text" id="newUserName" class="form-control" placeholder="Ej. Frutas Tropicales S.A." required autocomplete="off">
+                <span class="form-hint">Nombre visible del cliente o colaborador</span>
+              </div>
+
+              <div class="form-group-item">
+                <label><i class="fa-solid fa-user text-gold"></i> Nombre de Usuario (Login) *</label>
+                <input type="text" id="newUserUsername" class="form-control" placeholder="Ej. tropicales2026" required autocomplete="off">
+                <span class="form-hint">Identificador único para iniciar sesión</span>
+              </div>
+
+              <div class="form-group-item">
+                <label><i class="fa-solid fa-envelope text-gold"></i> Correo Electrónico</label>
+                <input type="email" id="newUserEmail" class="form-control" placeholder="contacto@tropicales.com" autocomplete="off">
+                <span class="form-hint">Opcional para contacto y notificaciones</span>
+              </div>
+
+              <div class="form-group-item">
+                <label><i class="fa-solid fa-lock text-gold"></i> Contraseña Inicial *</label>
+                <input type="password" id="newUserPassword" class="form-control" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
+                <span class="form-hint">Clave de acceso al portal Drive</span>
+              </div>
+
+              <div class="form-group-item" style="grid-column: 1 / -1;">
+                <label><i class="fa-solid fa-shield-halved text-gold"></i> Rol y Nivel de Permisos *</label>
+                <select id="newUserRole" class="form-select">
+                  <option value="client">👤 Cliente — Solo lectura (Navegar, previsualizar documentos y descargar archivos)</option>
+                  <option value="collab">✍️ Colaborador — Operativo (Ver, descargar, subir archivos y crear carpetas)</option>
+                  <option value="admin">🛡️ Administrador — Gestión total del Drive (Subir, borrar, papelera y crear usuarios)</option>
+                  <?php if ($isSuperAdmin): ?>
+                    <option value="superadmin">👑 Super Administrador — Control absoluto del Drive + Acceso al CMS de la Web</option>
+                  <?php endif; ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-buttons-row">
+              <button type="button" class="btn btn-outline-light" id="btnCancelCreateUser">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-user-plus"></i> Registrar Usuario
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 3: EDITAR USUARIO (CAMBIO DE CLAVE, DATOS Y ROL) -->
+        <div class="tab-pane" id="tabEditUser">
+          <form id="formEditUser" class="user-form-wrapper">
+            <input type="hidden" id="editUserId">
+            
+            <div class="form-grid-2col">
+              <div class="form-group-item">
+                <label><i class="fa-solid fa-id-card text-gold"></i> Nombre Completo / Empresa *</label>
+                <input type="text" id="editUserName" class="form-control" placeholder="Nombre completo" required autocomplete="off">
+              </div>
+
+              <div class="form-group-item">
+                <label><i class="fa-solid fa-user text-gold"></i> Nombre de Usuario (Login) *</label>
+                <input type="text" id="editUserUsername" class="form-control" placeholder="Nombre de usuario" required autocomplete="off">
+              </div>
+
+              <div class="form-group-item">
+                <label><i class="fa-solid fa-envelope text-gold"></i> Correo Electrónico</label>
+                <input type="email" id="editUserEmail" class="form-control" placeholder="correo@empresa.com" autocomplete="off">
+              </div>
+
+              <div class="form-group-item">
+                <label><i class="fa-solid fa-key text-gold"></i> Nueva Contraseña (Opcional)</label>
+                <input type="password" id="editUserPassword" class="form-control" placeholder="Dejar en blanco para conservar la actual" minlength="6" autocomplete="new-password">
+                <span class="form-hint" style="color: var(--gold-light);">Solo llena este campo si deseas cambiar la contraseña</span>
+              </div>
+
+              <div class="form-group-item" style="grid-column: 1 / -1;">
+                <label><i class="fa-solid fa-shield-halved text-gold"></i> Rol y Nivel de Permisos *</label>
+                <select id="editUserRole" class="form-select">
+                  <option value="client">👤 Cliente — Solo lectura (Navegar, previsualizar documentos y descargar archivos)</option>
+                  <option value="collab">✍️ Colaborador — Operativo (Ver, descargar, subir archivos y crear carpetas)</option>
+                  <option value="admin">🛡️ Administrador — Gestión total del Drive</option>
+                  <?php if ($isSuperAdmin): ?>
+                    <option value="superadmin">👑 Super Administrador — Control absoluto del Drive + Acceso al CMS de la Web</option>
+                  <?php endif; ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-buttons-row">
+              <button type="button" class="btn btn-outline-light" id="btnCancelEditUser">
+                <i class="fa-solid fa-arrow-left"></i> Volver a la Lista
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+              </button>
+            </div>
+          </form>
+        </div>
+
       </div>
     </div>
   <?php endif; ?>

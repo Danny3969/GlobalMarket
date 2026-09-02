@@ -1183,16 +1183,50 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 17. USER MANAGEMENT MODAL (ADMIN & SUPERADMIN)
+  // 17. USER MANAGEMENT & ROLES (SAAS TABS, CARDS & EDITING)
   // =========================================================================
   const btnManageUsers = document.getElementById('btnManageUsers');
   const sidebarBtnUsers = document.getElementById('sidebarBtnUsers');
   const usersModal = document.getElementById('usersModal');
   const btnCloseUsers = document.getElementById('btnCloseUsersModal');
 
+  // User management state
+  const userModuleState = {
+    users: [],
+    searchQuery: ''
+  };
+
+  function switchUserTab(targetTabId) {
+    document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+      if (btn.dataset.tab === targetTabId) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    document.querySelectorAll('#usersModal .tab-pane').forEach(pane => {
+      if (pane.id === targetTabId) {
+        pane.classList.add('active');
+      } else {
+        pane.classList.remove('active');
+      }
+    });
+
+    const editTabBtn = document.getElementById('tabBtnEdit');
+    if (editTabBtn) {
+      if (targetTabId === 'tabEditUser') {
+        editTabBtn.style.display = 'flex';
+      } else {
+        editTabBtn.style.display = 'none';
+      }
+    }
+  }
+
   function openUsersModal() {
     if (!usersModal) return;
     usersModal.classList.add('show', 'active');
+    switchUserTab('tabUsersList');
     loadUsersList();
   }
 
@@ -1224,6 +1258,40 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target === usersModal) closeUsersModal();
     });
 
+    // Tab Navigation Buttons Click
+    document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.dataset.tab;
+        switchUserTab(targetTab);
+      });
+    });
+
+    // Toolbar Buttons
+    const btnGoToCreate = document.getElementById('btnGoToCreateUser');
+    if (btnGoToCreate) {
+      btnGoToCreate.addEventListener('click', () => switchUserTab('tabCreateUser'));
+    }
+
+    const btnCancelCreate = document.getElementById('btnCancelCreateUser');
+    if (btnCancelCreate) {
+      btnCancelCreate.addEventListener('click', () => switchUserTab('tabUsersList'));
+    }
+
+    const btnCancelEdit = document.getElementById('btnCancelEditUser');
+    if (btnCancelEdit) {
+      btnCancelEdit.addEventListener('click', () => switchUserTab('tabUsersList'));
+    }
+
+    // Search Input in Users List
+    const searchUserInput = document.getElementById('searchUserInput');
+    if (searchUserInput) {
+      searchUserInput.addEventListener('input', (e) => {
+        userModuleState.searchQuery = e.target.value.toLowerCase().trim();
+        renderUsersList();
+      });
+    }
+
+    // Create User Form Submit
     const formCreate = document.getElementById('formCreateUser');
     if (formCreate) {
       formCreate.addEventListener('submit', async (e) => {
@@ -1243,74 +1311,193 @@ document.addEventListener('DOMContentLoaded', () => {
           const data = await res.json();
 
           if (data.success) {
-            showToast(data.message || 'Usuario registrado con éxito');
+            showToast(data.message || 'Usuario creado exitosamente');
             formCreate.reset();
+            switchUserTab('tabUsersList');
             loadUsersList();
           } else {
             showToast(data.error || 'Error al crear usuario', true);
           }
         } catch (err) {
-          showToast('Error de conexión', true);
+          showToast('Error de conexión con el servidor', true);
+        }
+      });
+    }
+
+    // Edit User Form Submit
+    const formEdit = document.getElementById('formEditUser');
+    if (formEdit) {
+      formEdit.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editUserId').value;
+        const name = document.getElementById('editUserName').value.trim();
+        const username = document.getElementById('editUserUsername').value.trim();
+        const email = document.getElementById('editUserEmail').value.trim();
+        const password = document.getElementById('editUserPassword').value.trim();
+        const role = document.getElementById('editUserRole').value;
+
+        try {
+          const res = await fetch('api.php?action=update_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, name, username, email, password, role })
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            showToast(data.message || 'Usuario actualizado con éxito');
+            document.getElementById('editUserPassword').value = '';
+            switchUserTab('tabUsersList');
+            loadUsersList();
+          } else {
+            showToast(data.error || 'Error al actualizar usuario', true);
+          }
+        } catch (err) {
+          showToast('Error de conexión con el servidor', true);
         }
       });
     }
   }
 
   async function loadUsersList() {
-    const tbody = document.getElementById('usersTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando usuarios...</td></tr>';
+    const container = document.getElementById('usersCardsContainer');
+    if (!container) return;
+    container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 2.5rem;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; color: var(--gold-light);"></i><p style="margin-top: 0.5rem;">Cargando directorio de usuarios...</p></div>';
 
     try {
       const res = await fetch('api.php?action=get_users');
       const data = await res.json();
 
       if (data.success) {
-        tbody.innerHTML = '';
-        data.users.forEach(u => {
-          const tr = document.createElement('tr');
-          const isMe = u.username === driveState.user.name || u.id === (driveState.user.id || '');
-          const roleLabels = {
-            superadmin: '<span class="user-role-badge badge-superadmin"><i class="fa-solid fa-crown"></i> Superadmin</span>',
-            admin: '<span class="user-role-badge badge-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span>',
-            collab: '<span class="user-role-badge badge-collab"><i class="fa-solid fa-pen-ruler"></i> Colaborador</span>',
-            client: '<span class="user-role-badge badge-client"><i class="fa-solid fa-user"></i> Cliente</span>'
-          };
-
-          tr.innerHTML = `
-            <td>
-              <strong style="color: #ffffff;">${escapeHtml(u.name)}</strong><br>
-              <small style="color: var(--gold-light);">@${escapeHtml(u.username)}</small>
-            </td>
-            <td>${roleLabels[u.role] || u.role}</td>
-            <td>${escapeHtml(u.email || '—')}</td>
-            <td><small style="color: var(--text-muted);">${u.created_at || '—'}</small></td>
-            <td style="text-align: right;">
-              ${!isMe && u.role !== 'superadmin' ? `
-                <button type="button" class="btn btn-danger btn-sm btn-del-user" data-id="${u.id}" title="Eliminar usuario">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              ` : '<small style="color: var(--text-muted);">Activo</small>'}
-            </td>
-          `;
-
-          const delBtn = tr.querySelector('.btn-del-user');
-          if (delBtn) {
-            delBtn.addEventListener('click', () => deleteUser(u.id, u.name));
-          }
-
-          tbody.appendChild(tr);
-        });
+        userModuleState.users = data.users || [];
+        const badge = document.getElementById('usersCountBadge');
+        if (badge) badge.textContent = userModuleState.users.length;
+        renderUsersList();
       } else {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444;">${escapeHtml(data.error || 'Error al cargar usuarios')}</td></tr>`;
+        container.innerHTML = `<div style="text-align: center; color: #ef4444; padding: 2rem;">${escapeHtml(data.error || 'Error al obtener usuarios')}</div>`;
       }
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ef4444;">Error de conexión al cargar usuarios</td></tr>';
+      container.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 2rem;">Error de conexión con el servidor</div>';
     }
   }
 
+  function renderUsersList() {
+    const container = document.getElementById('usersCardsContainer');
+    if (!container) return;
+
+    let filtered = userModuleState.users;
+    if (userModuleState.searchQuery) {
+      const q = userModuleState.searchQuery;
+      filtered = filtered.filter(u => 
+        (u.name && u.name.toLowerCase().includes(q)) ||
+        (u.username && u.username.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.role && u.role.toLowerCase().includes(q))
+      );
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+          <i class="fa-solid fa-user-slash" style="font-size: 2.5rem; color: rgba(255, 255, 255, 0.15); margin-bottom: 0.75rem;"></i>
+          <p style="font-size: 0.95rem; color: #e2e8f0;">No se encontraron usuarios</p>
+          <small style="color: var(--text-muted);">Prueba con otros términos de búsqueda o registra un nuevo usuario</small>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = '';
+
+    filtered.forEach(u => {
+      const isMe = u.username === driveState.user.name || u.id === (driveState.user.id || '');
+      const isSuper = u.role === 'superadmin';
+      
+      const roleBadges = {
+        superadmin: '<span class="user-role-badge badge-superadmin"><i class="fa-solid fa-crown"></i> SUPERADMIN</span>',
+        admin: '<span class="user-role-badge badge-admin"><i class="fa-solid fa-shield-halved"></i> Administrador</span>',
+        collab: '<span class="user-role-badge badge-collab"><i class="fa-solid fa-pen-ruler"></i> Colaborador</span>',
+        client: '<span class="user-role-badge badge-client"><i class="fa-solid fa-user"></i> Cliente</span>'
+      };
+
+      const avatarClasses = {
+        superadmin: 'avatar-superadmin',
+        admin: 'avatar-admin',
+        collab: 'avatar-collab',
+        client: 'avatar-client'
+      };
+
+      const initial = (u.name || u.username || 'U').charAt(0).toUpperCase();
+
+      const card = document.createElement('div');
+      card.className = 'user-item-card';
+
+      card.innerHTML = `
+        <div class="user-main-info">
+          <div class="user-avatar-circle ${avatarClasses[u.role] || 'avatar-client'}">
+            ${isSuper ? '<i class="fa-solid fa-crown" style="font-size: 1rem;"></i>' : initial}
+          </div>
+          <div class="user-meta-texts">
+            <div class="user-title-line">
+              <span class="user-name-text">${escapeHtml(u.name)}</span>
+              <span class="user-username-badge">@${escapeHtml(u.username)}</span>
+              ${roleBadges[u.role] || u.role}
+            </div>
+            <div class="user-contact-line">
+              <span><i class="fa-solid fa-envelope" style="font-size: 0.7rem;"></i> ${escapeHtml(u.email || 'Sin correo asignado')}</span>
+              <span>•</span>
+              <span><i class="fa-solid fa-calendar-check" style="font-size: 0.7rem;"></i> Alta: ${u.created_at || '—'}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="user-card-actions">
+          <button type="button" class="btn-card-edit" title="Editar datos y contraseña de este usuario">
+            <i class="fa-solid fa-pen-to-square text-gold"></i> Editar
+          </button>
+          ${!isSuper && !isMe ? `
+            <button type="button" class="btn-card-del" title="Eliminar este usuario">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          ` : ''}
+        </div>
+      `;
+
+      // Event: Edit User
+      card.querySelector('.btn-card-edit').addEventListener('click', () => {
+        openEditUserForm(u);
+      });
+
+      // Event: Delete User
+      const delBtn = card.querySelector('.btn-card-del');
+      if (delBtn) {
+        delBtn.addEventListener('click', () => {
+          deleteUser(u.id, u.name);
+        });
+      }
+
+      container.appendChild(card);
+    });
+  }
+
+  function openEditUserForm(user) {
+    document.getElementById('editUserId').value = user.id;
+    document.getElementById('editUserName').value = user.name || '';
+    document.getElementById('editUserUsername').value = user.username || '';
+    document.getElementById('editUserEmail').value = user.email || '';
+    document.getElementById('editUserPassword').value = '';
+    document.getElementById('editUserRole').value = user.role || 'client';
+
+    switchUserTab('tabEditUser');
+    setTimeout(() => {
+      document.getElementById('editUserName').focus();
+    }, 100);
+  }
+
   async function deleteUser(id, name) {
-    if (!confirm(`¿Eliminar permanentemente al usuario "${name}"?`)) return;
+    if (!confirm(`¿Estás seguro de eliminar permanentemente al usuario "${name}"?\nEsta acción no se puede deshacer.`)) {
+      return;
+    }
 
     try {
       const res = await fetch('api.php?action=delete_user', {
@@ -1321,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
 
       if (data.success) {
-        showToast('Usuario eliminado con éxito');
+        showToast(data.message || 'Usuario eliminado con éxito');
         loadUsersList();
       } else {
         showToast(data.error || 'Error al eliminar usuario', true);
