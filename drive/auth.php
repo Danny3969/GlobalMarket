@@ -42,9 +42,19 @@ function is_drive_logged_in() {
     return !empty($_SESSION['gm_drive_logged']) && $_SESSION['gm_drive_logged'] === true;
 }
 
+function is_drive_superadmin() {
+    $user = get_logged_drive_user();
+    return $user && ($user['role'] === 'superadmin');
+}
+
 function is_drive_admin() {
     $user = get_logged_drive_user();
-    return $user && ($user['role'] === 'admin');
+    return $user && in_array($user['role'], ['superadmin', 'admin']);
+}
+
+function is_drive_collab() {
+    $user = get_logged_drive_user();
+    return $user && in_array($user['role'], ['superadmin', 'admin', 'collab']);
 }
 
 function require_drive_auth() {
@@ -59,6 +69,14 @@ function require_drive_admin() {
     if (!is_drive_admin()) {
         http_response_code(403);
         die('Acceso denegado: Se requieren permisos de Administrador.');
+    }
+}
+
+function require_drive_superadmin() {
+    require_drive_auth();
+    if (!is_drive_superadmin()) {
+        http_response_code(403);
+        die('Acceso denegado: Se requieren permisos de Super Administrador.');
     }
 }
 
@@ -102,10 +120,4 @@ function verify_drive_login($username, $password) {
     }
 
     return ['success' => false, 'error' => 'Usuario no encontrado'];
-}
-
-function logout_drive_user() {
-    $_SESSION['gm_drive_logged'] = false;
-    unset($_SESSION['gm_drive_user']);
-    session_destroy();
 }

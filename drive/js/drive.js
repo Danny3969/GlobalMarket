@@ -1,12 +1,16 @@
-// GlobalMarket GM - Cloud Drive Controller
+// GlobalMarket GM - Cloud Drive & Intranet Controller
 document.addEventListener('DOMContentLoaded', () => {
   const rawInit = window.INITIAL_DRIVE_DATA || {};
 
   let driveState = {
     currentPath: rawInit.current_path || 'GlobalMarket',
     currentView: 'grid',
+    inTrashView: false,
     folders: rawInit.folders || [],
     files: rawInit.files || [],
+    favorites: rawInit.favorites || [],
+    trashItems: [],
+    trashCount: rawInit.trash_count || 0,
     breadcrumbs: rawInit.breadcrumbs || [{ name: 'GlobalMarket', path: 'GlobalMarket' }],
     stats: rawInit.stats || {},
     user: rawInit.user || {},
@@ -35,9 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 1. LOAD DIRECTORY
+  // 1. DIRECTORY LOADER
   // =========================================================================
   async function loadDirectory(path = 'GlobalMarket') {
+    driveState.inTrashView = false;
+    document.getElementById('trashBanner').style.display = 'none';
+    document.getElementById('driveToolbar').style.display = 'flex';
+    document.getElementById('sidebarNavRoot').classList.add('active');
+    document.getElementById('sidebarNavTrash').classList.remove('active');
+
     const contentArea = document.getElementById('driveExplorerContent');
     contentArea.innerHTML = '<div style="text-align:center; padding: 4rem 1rem; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--gold-light);"></i><p>Cargando archivos...</p></div>';
 
@@ -50,10 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
         driveState.breadcrumbs = data.breadcrumbs;
         driveState.folders = data.folders;
         driveState.files = data.files;
+        driveState.favorites = data.favorites || [];
         driveState.stats = data.stats;
         driveState.user = data.user;
 
-        updateUIPermissions();
+        renderSidebarFavorites();
         renderBreadcrumbs();
         renderExplorer();
       } else {
@@ -64,16 +75,86 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function updateUIPermissions() {
-    const isAdmin = driveState.user.is_admin;
-    const adminOnlyBtns = document.querySelectorAll('.admin-only');
-    adminOnlyBtns.forEach(el => {
-      el.style.display = isAdmin ? '' : 'none';
+  // =========================================================================
+  // 2. TRASH LOADER
+  // =========================================================================
+  async function loadTrashView() {
+    driveState.inTrashView = true;
+    driveState.currentPath = '_trash_';
+    document.getElementById('trashBanner').style.display = 'flex';
+    document.getElementById('driveToolbar').style.display = 'none';
+    document.getElementById('sidebarNavRoot').classList.remove('active');
+    document.getElementById('sidebarNavTrash').classList.add('active');
+
+    const breadcrumbs = document.getElementById('driveBreadcrumbs');
+    breadcrumbs.innerHTML = `
+      <a href="#" class="crumb-link" id="crumbBackHome"><i class="fa-solid fa-hard-drive"></i> Mi Unidad</a>
+      <span class="crumb-separator"><i class="fa-solid fa-chevron-right"></i></span>
+      <span class="crumb-current"><i class="fa-solid fa-trash-can text-danger"></i> Papelera de Reciclaje</span>
+    `;
+    document.getElementById('crumbBackHome').addEventListener('click', (e) => {
+      e.preventDefault();
+      loadDirectory('GlobalMarket');
+    });
+
+    const contentArea = document.getElementById('driveExplorerContent');
+    contentArea.innerHTML = '<div style="text-align:center; padding: 4rem 1rem; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--gold-light);"></i><p>Cargando papelera...</p></div>';
+
+    try {
+      const res = await fetch('api.php?action=get_trash');
+      const data = await res.json();
+
+      if (data.success) {
+        driveState.trashItems = data.items || [];
+        driveState.trashCount = data.count || 0;
+        updateTrashBadgeCount(driveState.trashCount);
+        renderTrashView();
+      } else {
+        showToast(data.error || 'Error al cargar la papelera', true);
+      }
+    } catch (e) {
+      contentArea.innerHTML = '<div style="text-align:center; padding: 4rem 1rem; color: #ef4444;"><i class="fa-solid fa-triangle-exclamation" style="font-size: 2.5rem; margin-bottom: 1rem;"></i><p>Error de conexión al cargar la papelera</p></div>';
+    }
+  }
+
+  function updateTrashBadgeCount(cnt) {
+    const el = document.getElementById('sidebarTrashCount');
+    if (el) {
+      el.textContent = cnt;
+    }
+  }
+
+  // =========================================================================
+  // 3. RENDER SIDEBAR FAVORITES
+  // =========================================================================
+  function renderSidebarFavorites() {
+    const container = document.getElementById('sidebarFavorites');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const favs = driveState.favorites || [];
+    if (favs.length === 0) {
+      container.innerHTML = '<div class="sidebar-empty-favs"><small>Sin carpetas fijadas</small></div>';
+      return;
+    }
+
+    favs.forEach(f => {
+      const a = document.createElement('a');
+      a.href = '#';
+      a.className = 'sidebar-fav-link';
+      a.dataset.path = f.path;
+      a.title = f.name;
+      a.innerHTML = `<i class="fa-solid fa-star text-gold"></i><span>${escapeHtml(f.name)}</span>`;
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        loadDirectory(f.path);
+      });
+      container.appendChild(a);
     });
   }
 
   // =========================================================================
-  // 2. RENDER BREADCRUMBS
+  // 4. RENDER BREADCRUMBS
   // =========================================================================
   function renderBreadcrumbs() {
     const container = document.getElementById('driveBreadcrumbs');
@@ -93,12 +174,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isLast) {
         const span = document.createElement('span');
         span.className = 'crumb-current';
-        span.innerHTML = `<i class="fa-solid fa-folder-open text-gold"></i> ${c.name}`;
+        span.innerHTML = `<i class="fa-solid fa-folder-open text-gold"></i> ${escapeHtml(c.name)}`;
         container.appendChild(span);
       } else {
         const a = document.createElement('a');
         a.className = 'crumb-link';
-        a.innerHTML = idx === 0 ? '<i class="fa-solid fa-hard-drive"></i> GlobalMarket' : c.name;
+        a.innerHTML = idx === 0 ? '<i class="fa-solid fa-hard-drive"></i> Mi Unidad' : escapeHtml(c.name);
         a.addEventListener('click', (e) => {
           e.preventDefault();
           loadDirectory(c.path);
@@ -109,13 +190,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 3. RENDER EXPLORER (GRID OR LIST)
+  // 5. RENDER EXPLORER (GRID OR LIST)
   // =========================================================================
   function renderExplorer() {
     const container = document.getElementById('driveExplorerContent');
     container.innerHTML = '';
 
-    // Filter by search query
     const q = (driveState.searchQuery || '').toLowerCase().trim();
     const filteredFolders = driveState.folders.filter(f => f.name.toLowerCase().includes(q));
     const filteredFiles = driveState.files.filter(f => f.name.toLowerCase().includes(q));
@@ -125,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="drive-empty-state">
           <i class="fa-regular fa-folder-open"></i>
           <h4>Esta carpeta está vacía</h4>
-          <p>${driveState.user.is_admin ? 'Sube documentos o crea carpetas usando los botones superiores.' : 'No hay documentos disponibles en esta sección.'}</p>
+          <p>${(driveState.user.is_admin || driveState.user.role === 'collab') ? 'Arrastra archivos aquí o usa el botón "Subir Archivo".' : 'No hay documentos disponibles en esta sección.'}</p>
         </div>
       `;
       return;
@@ -140,7 +220,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Grid View Renderer
   function renderGridView(container, folders, files) {
-    // Folders Section
+    const isAdmin = driveState.user.is_admin;
+    const isCollab = driveState.user.role === 'collab';
+
+    // FOLDERS
     if (folders.length > 0) {
       const folderTitle = document.createElement('h4');
       folderTitle.className = 'section-title';
@@ -148,37 +231,69 @@ document.addEventListener('DOMContentLoaded', () => {
       container.appendChild(folderTitle);
 
       const fGrid = document.createElement('div');
-      fGrid.className = 'folders-grid';
+      fGrid.className = 'drive-grid';
 
       folders.forEach(f => {
         const card = document.createElement('div');
-        card.className = 'folder-card';
+        card.className = 'drive-card';
+
         card.innerHTML = `
-          <div class="folder-card-main">
-            <i class="fa-solid fa-folder folder-icon"></i>
-            <div class="folder-info">
-              <div class="folder-name" title="${f.name}">${f.name}</div>
-              <div class="folder-count">${f.items_count} elemento${f.items_count !== 1 ? 's' : ''}</div>
+          <div class="drive-card-header">
+            <div class="card-icon folder-icon">
+              <i class="fa-solid fa-folder"></i>
+            </div>
+            <div class="card-quick-actions">
+              <button type="button" class="btn-card-action btn-fav ${f.is_favorite ? 'is-favorite' : ''}" title="${f.is_favorite ? 'Quitar de Favoritos' : 'Añadir a Favoritos'}">
+                <i class="fa-${f.is_favorite ? 'solid' : 'regular'} fa-star"></i>
+              </button>
+              ${isAdmin ? `
+                <button type="button" class="btn-card-action btn-rename" title="Renombrar Carpeta">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+              ` : ''}
+              ${(isAdmin || isCollab) ? `
+                <button type="button" class="btn-card-action btn-trash" title="Enviar a la Papelera">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              ` : ''}
             </div>
           </div>
-          ${driveState.user.is_admin ? `
-            <div class="folder-actions" style="display: flex; gap: 0.2rem;">
-              <button type="button" class="btn-card-action btn-del btn-del-folder" title="Eliminar Carpeta" data-path="${f.path}">
-                <i class="fa-solid fa-trash-can"></i>
-              </button>
+          <div class="drive-card-body">
+            <h4 class="card-name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</h4>
+            <div class="card-meta">
+              <span>${f.items_count} elemento${f.items_count === 1 ? '' : 's'}</span>
+              <span>${f.mtime}</span>
             </div>
-          ` : ''}
+          </div>
         `;
 
-        card.querySelector('.folder-card-main').addEventListener('click', () => {
+        // Card Click opens folder
+        card.querySelector('.drive-card-body').addEventListener('click', () => {
+          loadDirectory(f.path);
+        });
+        card.querySelector('.card-icon').addEventListener('click', () => {
           loadDirectory(f.path);
         });
 
-        const btnDel = card.querySelector('.btn-del-folder');
-        if (btnDel) {
-          btnDel.addEventListener('click', (e) => {
+        // Favorite Toggle
+        card.querySelector('.btn-fav').addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleFavorite(f.path, f.name);
+        });
+
+        // Rename
+        if (isAdmin) {
+          card.querySelector('.btn-rename').addEventListener('click', (e) => {
             e.stopPropagation();
-            deleteItem(f.path, f.name, true);
+            openRenameModal(f.path, f.name);
+          });
+        }
+
+        // Trash
+        if (isAdmin || isCollab) {
+          card.querySelector('.btn-trash').addEventListener('click', (e) => {
+            e.stopPropagation();
+            moveToTrash(f.path, f.name);
           });
         }
 
@@ -188,86 +303,95 @@ document.addEventListener('DOMContentLoaded', () => {
       container.appendChild(fGrid);
     }
 
-    // Files Section
+    // FILES
     if (files.length > 0) {
       const fileTitle = document.createElement('h4');
       fileTitle.className = 'section-title';
-      fileTitle.innerHTML = `<i class="fa-solid fa-file-lines"></i> Archivos (${files.length})`;
+      fileTitle.style.marginTop = folders.length > 0 ? '2rem' : '0';
+      fileTitle.innerHTML = `<i class="fa-solid fa-file"></i> Archivos (${files.length})`;
       container.appendChild(fileTitle);
 
-      const fileGrid = document.createElement('div');
-      fileGrid.className = 'files-grid';
+      const fGrid = document.createElement('div');
+      fGrid.className = 'drive-grid';
 
       files.forEach(file => {
         const card = document.createElement('div');
-        card.className = 'file-card';
-        
-        let previewHtml = `<i class="fa-solid ${file.icon}" style="color: ${file.color};"></i>`;
-        if (['jpg', 'jpeg', 'png', 'webp'].includes(file.ext)) {
-          previewHtml = `<img src="api.php?action=view&path=${encodeURIComponent(file.path)}" alt="${file.name}" style="width:100%; height:100%; object-fit:cover;">`;
-        }
+        card.className = 'drive-card';
 
         card.innerHTML = `
-          <div class="file-card-preview" title="Hacer clic para previsualizar">
-            ${previewHtml}
-          </div>
-          <div class="file-card-info">
-            <div class="file-name" title="${file.name}">${file.name}</div>
-            <div class="file-meta">
-              <span>${file.size_formatted}</span>
-              <span>${file.mtime.split(' ')[0]}</span>
+          <div class="drive-card-header">
+            <div class="card-icon file-icon" style="color: ${file.color};">
+              <i class="fa-solid ${file.icon}"></i>
             </div>
-            <div class="file-card-actions">
+            <div class="card-quick-actions">
               ${file.previewable ? `
-                <button type="button" class="btn-card-action btn-preview-file" title="Previsualizar Documento" data-path="${file.path}" data-name="${file.name}" data-ext="${file.ext}">
+                <button type="button" class="btn-card-action btn-preview" title="Previsualizar">
                   <i class="fa-solid fa-eye"></i>
                 </button>
               ` : ''}
-              <a href="api.php?action=download&path=${encodeURIComponent(file.path)}" class="btn-card-action" title="Descargar Archivo">
+              <a href="api.php?action=download&path=${encodeURIComponent(file.path)}" class="btn-card-action" title="Descargar">
                 <i class="fa-solid fa-download"></i>
               </a>
-              ${driveState.user.is_admin ? `
-                <button type="button" class="btn-card-action btn-del btn-del-file" title="Eliminar Archivo" data-path="${file.path}">
+              ${isAdmin ? `
+                <button type="button" class="btn-card-action btn-rename" title="Renombrar Archivo">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+              ` : ''}
+              ${(isAdmin || isCollab) ? `
+                <button type="button" class="btn-card-action btn-trash" title="Enviar a la Papelera">
                   <i class="fa-solid fa-trash-can"></i>
                 </button>
               ` : ''}
             </div>
           </div>
+          <div class="drive-card-body">
+            <h4 class="card-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</h4>
+            <div class="card-meta">
+              <span>${file.size_formatted}</span>
+              <span>${file.mtime}</span>
+            </div>
+          </div>
         `;
 
-        card.querySelector('.file-card-preview').addEventListener('click', () => {
-          if (file.previewable) {
-            openPreviewModal(file.path, file.name, file.ext);
-          } else {
-            window.location.href = `api.php?action=download&path=${encodeURIComponent(file.path)}`;
-          }
-        });
-
-        const btnPrev = card.querySelector('.btn-preview-file');
-        if (btnPrev) {
-          btnPrev.addEventListener('click', (e) => {
+        if (file.previewable) {
+          card.querySelector('.drive-card-body').addEventListener('click', () => {
+            openPreview(file);
+          });
+          card.querySelector('.btn-preview').addEventListener('click', (e) => {
             e.stopPropagation();
-            openPreviewModal(file.path, file.name, file.ext);
+            openPreview(file);
           });
         }
 
-        const btnDel = card.querySelector('.btn-del-file');
-        if (btnDel) {
-          btnDel.addEventListener('click', (e) => {
+        if (isAdmin) {
+          card.querySelector('.btn-rename').addEventListener('click', (e) => {
             e.stopPropagation();
-            deleteItem(file.path, file.name, false);
+            openRenameModal(file.path, file.name);
           });
         }
 
-        fileGrid.appendChild(card);
+        if (isAdmin || isCollab) {
+          card.querySelector('.btn-trash').addEventListener('click', (e) => {
+            e.stopPropagation();
+            moveToTrash(file.path, file.name);
+          });
+        }
+
+        fGrid.appendChild(card);
       });
 
-      container.appendChild(fileGrid);
+      container.appendChild(fGrid);
     }
   }
 
   // List View Renderer
   function renderListView(container, folders, files) {
+    const isAdmin = driveState.user.is_admin;
+    const isCollab = driveState.user.role === 'collab';
+
+    const tableWrapper = document.createElement('div');
+    tableWrapper.className = 'drive-table-wrapper';
+
     const table = document.createElement('table');
     table.className = 'drive-list-table';
 
@@ -275,374 +399,763 @@ document.addEventListener('DOMContentLoaded', () => {
       <thead>
         <tr>
           <th>Nombre</th>
-          <th>Tipo</th>
+          <th>Tipo / Elementos</th>
           <th>Tamaño</th>
           <th>Última Modificación</th>
           <th style="text-align: right;">Acciones</th>
         </tr>
       </thead>
-      <tbody>
-        ${folders.map(f => `
-          <tr class="folder-row" data-path="${f.path}">
-            <td>
-              <div class="table-item-name">
-                <i class="fa-solid fa-folder text-gold"></i>
-                <span>${f.name}</span>
-              </div>
-            </td>
-            <td><span class="badge-vault">Carpeta</span></td>
-            <td>${f.items_count} elementos</td>
-            <td>${f.mtime}</td>
-            <td style="text-align: right;">
-              ${driveState.user.is_admin ? `
-                <button type="button" class="btn-card-action btn-del btn-del-folder" data-path="${f.path}" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
-              ` : ''}
-            </td>
-          </tr>
-        `).join('')}
-        ${files.map(file => `
-          <tr class="file-row" data-path="${file.path}">
-            <td>
-              <div class="table-item-name btn-preview-inline" data-path="${file.path}" data-name="${file.name}" data-ext="${file.ext}" data-prev="${file.previewable}">
-                <i class="fa-solid ${file.icon}" style="color: ${file.color};"></i>
-                <span>${file.name}</span>
-              </div>
-            </td>
-            <td><span class="badge-vault" style="background: rgba(255,255,255,0.06);">${file.type_name}</span></td>
-            <td>${file.size_formatted}</td>
-            <td>${file.mtime}</td>
-            <td style="text-align: right;">
-              <div style="display: inline-flex; gap: 0.35rem;">
-                ${file.previewable ? `
-                  <button type="button" class="btn-card-action btn-preview-file" data-path="${file.path}" data-name="${file.name}" data-ext="${file.ext}" title="Ver"><i class="fa-solid fa-eye"></i></button>
-                ` : ''}
-                <a href="api.php?action=download&path=${encodeURIComponent(file.path)}" class="btn-card-action" title="Descargar"><i class="fa-solid fa-download"></i></a>
-                ${driveState.user.is_admin ? `
-                  <button type="button" class="btn-card-action btn-del btn-del-file" data-path="${file.path}" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
-                ` : ''}
-              </div>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
+      <tbody></tbody>
     `;
 
-    // Bind folder row clicks
-    table.querySelectorAll('.folder-row').forEach(tr => {
-      tr.querySelector('.table-item-name').addEventListener('click', () => {
-        loadDirectory(tr.getAttribute('data-path'));
+    const tbody = table.querySelector('tbody');
+
+    // FOLDERS ROW
+    folders.forEach(f => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fa-solid fa-folder text-gold" style="font-size: 1.25rem;"></i>
+            <span style="font-weight: 600; color: #ffffff;">${escapeHtml(f.name)}</span>
+          </div>
+        </td>
+        <td>Carpeta de Archivos (${f.items_count} items)</td>
+        <td>—</td>
+        <td>${f.mtime}</td>
+        <td style="text-align: right;">
+          <div style="display: inline-flex; gap: 0.35rem;">
+            <button type="button" class="btn-card-action btn-fav ${f.is_favorite ? 'is-favorite' : ''}" title="${f.is_favorite ? 'Quitar de Favoritos' : 'Añadir a Favoritos'}">
+              <i class="fa-${f.is_favorite ? 'solid' : 'regular'} fa-star"></i>
+            </button>
+            ${isAdmin ? `
+              <button type="button" class="btn-card-action btn-rename" title="Renombrar">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+            ` : ''}
+            ${(isAdmin || isCollab) ? `
+              <button type="button" class="btn-card-action btn-trash" title="Enviar a la Papelera">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            ` : ''}
+          </div>
+        </td>
+      `;
+
+      tr.querySelector('td:first-child').addEventListener('click', () => {
+        loadDirectory(f.path);
       });
+
+      tr.querySelector('.btn-fav').addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleFavorite(f.path, f.name);
+      });
+
+      if (isAdmin) {
+        tr.querySelector('.btn-rename').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openRenameModal(f.path, f.name);
+        });
+      }
+
+      if (isAdmin || isCollab) {
+        tr.querySelector('.btn-trash').addEventListener('click', (e) => {
+          e.stopPropagation();
+          moveToTrash(f.path, f.name);
+        });
+      }
+
+      tbody.appendChild(tr);
     });
 
-    // Bind preview clicks
-    table.querySelectorAll('.btn-preview-inline').forEach(el => {
-      el.addEventListener('click', () => {
-        const canPrev = el.getAttribute('data-prev') === 'true';
-        const p = el.getAttribute('data-path');
-        const n = el.getAttribute('data-name');
-        const ext = el.getAttribute('data-ext');
-        if (canPrev) {
-          openPreviewModal(p, n, ext);
-        } else {
-          window.location.href = `api.php?action=download&path=${encodeURIComponent(p)}`;
-        }
-      });
+    // FILES ROW
+    files.forEach(file => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="cursor: ${file.previewable ? 'pointer' : 'default'};">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fa-solid ${file.icon}" style="font-size: 1.25rem; color: ${file.color};"></i>
+            <span style="font-weight: 500; color: #ffffff;">${escapeHtml(file.name)}</span>
+          </div>
+        </td>
+        <td>${file.type_name}</td>
+        <td>${file.size_formatted}</td>
+        <td>${file.mtime}</td>
+        <td style="text-align: right;">
+          <div style="display: inline-flex; gap: 0.35rem;">
+            ${file.previewable ? `
+              <button type="button" class="btn-card-action btn-preview" title="Previsualizar">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            ` : ''}
+            <a href="api.php?action=download&path=${encodeURIComponent(file.path)}" class="btn-card-action" title="Descargar">
+              <i class="fa-solid fa-download"></i>
+            </a>
+            ${isAdmin ? `
+              <button type="button" class="btn-card-action btn-rename" title="Renombrar">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+            ` : ''}
+            ${(isAdmin || isCollab) ? `
+              <button type="button" class="btn-card-action btn-trash" title="Enviar a la Papelera">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            ` : ''}
+          </div>
+        </td>
+      `;
+
+      if (file.previewable) {
+        tr.querySelector('td:first-child').addEventListener('click', () => {
+          openPreview(file);
+        });
+        tr.querySelector('.btn-preview').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openPreview(file);
+        });
+      }
+
+      if (isAdmin) {
+        tr.querySelector('.btn-rename').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openRenameModal(file.path, file.name);
+        });
+      }
+
+      if (isAdmin || isCollab) {
+        tr.querySelector('.btn-trash').addEventListener('click', (e) => {
+          e.stopPropagation();
+          moveToTrash(file.path, file.name);
+        });
+      }
+
+      tbody.appendChild(tr);
     });
 
-    table.querySelectorAll('.btn-preview-file').forEach(btn => {
-      btn.addEventListener('click', () => {
-        openPreviewModal(btn.getAttribute('data-path'), btn.getAttribute('data-name'), btn.getAttribute('data-ext'));
-      });
-    });
-
-    table.querySelectorAll('.btn-del-folder').forEach(btn => {
-      btn.addEventListener('click', () => {
-        deleteItem(btn.getAttribute('data-path'), 'esta carpeta', true);
-      });
-    });
-
-    table.querySelectorAll('.btn-del-file').forEach(btn => {
-      btn.addEventListener('click', () => {
-        deleteItem(btn.getAttribute('data-path'), 'este archivo', false);
-      });
-    });
-
-    container.appendChild(table);
+    tableWrapper.appendChild(table);
+    container.appendChild(tableWrapper);
   }
 
   // =========================================================================
-  // 4. PREVIEW MODAL
+  // 6. RENDER TRASH VIEW
   // =========================================================================
-  function openPreviewModal(path, filename, ext) {
-    const modal = document.getElementById('previewModal');
-    const title = document.getElementById('previewModalTitle');
-    const body = document.getElementById('previewModalBody');
-    const btnDownload = document.getElementById('btnPreviewDownload');
+  function renderTrashView() {
+    const container = document.getElementById('driveExplorerContent');
+    container.innerHTML = '';
 
-    title.textContent = filename;
-    btnDownload.href = `api.php?action=download&path=${encodeURIComponent(path)}`;
+    const isAdmin = driveState.user.is_admin;
+    const items = driveState.trashItems || [];
 
-    const streamUrl = `api.php?action=view&path=${encodeURIComponent(path)}`;
-
-    if (ext === 'pdf') {
-      body.innerHTML = `<iframe src="${streamUrl}"></iframe>`;
-    } else if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-      body.innerHTML = `<img src="${streamUrl}" alt="${filename}">`;
-    } else if (['mp4', 'mov'].includes(ext)) {
-      body.innerHTML = `<video controls autoplay><source src="${streamUrl}" type="video/mp4">Tu navegador no soporta video.</video>`;
-    } else {
-      body.innerHTML = `<iframe src="${streamUrl}"></iframe>`;
+    if (items.length === 0) {
+      container.innerHTML = `
+        <div class="drive-empty-state">
+          <i class="fa-solid fa-trash-can" style="color: #64748b;"></i>
+          <h4>La papelera de reciclaje está vacía</h4>
+          <p>Los archivos que elimines se guardarán aquí temporalmente por si necesitas restaurarlos.</p>
+        </div>
+      `;
+      return;
     }
 
-    modal.classList.add('show');
+    const tableWrapper = document.createElement('div');
+    tableWrapper.className = 'drive-table-wrapper';
+
+    const table = document.createElement('table');
+    table.className = 'drive-list-table';
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Elemento Eliminado</th>
+          <th>Ubicación Original</th>
+          <th>Tamaño</th>
+          <th>Fecha de Eliminación</th>
+          <th>Eliminado Por</th>
+          <th style="text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+
+    const tbody = table.querySelector('tbody');
+
+    items.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fa-solid ${item.is_folder ? 'fa-folder text-gold' : 'fa-file'}" style="font-size: 1.25rem;"></i>
+            <span style="font-weight: 600; color: #ffffff;">${escapeHtml(item.name)}</span>
+          </div>
+        </td>
+        <td><code style="color: var(--gold-light); font-size: 0.8rem;">${escapeHtml(item.original_path)}</code></td>
+        <td>${item.size_formatted}</td>
+        <td>${item.deleted_at}</td>
+        <td>${escapeHtml(item.deleted_by || 'Admin')}</td>
+        <td style="text-align: right;">
+          <div style="display: inline-flex; gap: 0.4rem;">
+            <button type="button" class="btn btn-primary btn-sm btn-restore" title="Restaurar a su ubicación original">
+              <i class="fa-solid fa-rotate-left"></i> Restaurar
+            </button>
+            ${isAdmin ? `
+              <button type="button" class="btn btn-danger btn-sm btn-purge" title="Eliminar definitivamente">
+                <i class="fa-solid fa-trash-xmark"></i> Eliminar
+              </button>
+            ` : ''}
+          </div>
+        </td>
+      `;
+
+      tr.querySelector('.btn-restore').addEventListener('click', () => {
+        restoreFromTrash(item.id, item.name);
+      });
+
+      if (isAdmin) {
+        tr.querySelector('.btn-purge').addEventListener('click', () => {
+          purgeFromTrash(item.id, item.name);
+        });
+      }
+
+      tbody.appendChild(tr);
+    });
+
+    tableWrapper.appendChild(table);
+    container.appendChild(tableWrapper);
   }
 
-  document.getElementById('btnClosePreview').addEventListener('click', () => {
-    document.getElementById('previewModal').classList.remove('show');
-    document.getElementById('previewModalBody').innerHTML = '';
+  // =========================================================================
+  // 7. FAVORITES TOGGLE
+  // =========================================================================
+  async function toggleFavorite(path, name) {
+    try {
+      const res = await fetch('api.php?action=toggle_favorite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path, name })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        driveState.favorites = data.favorites;
+        renderSidebarFavorites();
+
+        // Update card in current list
+        driveState.folders.forEach(f => {
+          if (f.path === path) {
+            f.is_favorite = data.is_favorite;
+          }
+        });
+        renderExplorer();
+        showToast(data.message);
+      } else {
+        showToast(data.error || 'Error al actualizar favoritos', true);
+      }
+    } catch (e) {
+      showToast('Error de conexión', true);
+    }
+  }
+
+  // =========================================================================
+  // 8. RENAME MODAL & ACTION
+  // =========================================================================
+  function openRenameModal(path, currentName) {
+    document.getElementById('renameItemPath').value = path;
+    document.getElementById('renameItemNewName').value = currentName;
+    document.getElementById('renameModal').classList.add('active');
+    setTimeout(() => {
+      document.getElementById('renameItemNewName').focus();
+      document.getElementById('renameItemNewName').select();
+    }, 100);
+  }
+
+  document.getElementById('btnCloseRenameModal').addEventListener('click', () => {
+    document.getElementById('renameModal').classList.remove('active');
+  });
+
+  document.getElementById('formRenameItem').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const path = document.getElementById('renameItemPath').value;
+    const newName = document.getElementById('renameItemNewName').value.trim();
+
+    if (!newName) {
+      showToast('Ingresa un nombre válido', true);
+      return;
+    }
+
+    try {
+      const res = await fetch('api.php?action=rename_item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path, new_name: newName })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        document.getElementById('renameModal').classList.remove('active');
+        showToast(data.message || 'Renombrado con éxito');
+        loadDirectory(driveState.currentPath);
+      } else {
+        showToast(data.error || 'Error al renombrar', true);
+      }
+    } catch (err) {
+      showToast('Error de conexión al renombrar', true);
+    }
   });
 
   // =========================================================================
-  // 5. UPLOAD & DRAG DROP
+  // 9. SOFT DELETE / MOVE TO TRASH
+  // =========================================================================
+  async function moveToTrash(path, name) {
+    if (!confirm(`¿Enviar "${name}" a la Papelera de Reciclaje?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch('api.php?action=move_to_trash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        driveState.trashCount++;
+        updateTrashBadgeCount(driveState.trashCount);
+        showToast(data.message || 'Elemento movido a la papelera');
+        loadDirectory(driveState.currentPath);
+      } else {
+        showToast(data.error || 'Error al mover a la papelera', true);
+      }
+    } catch (e) {
+      showToast('Error de conexión', true);
+    }
+  }
+
+  // =========================================================================
+  // 10. RESTORE & PURGE TRASH ACTIONS
+  // =========================================================================
+  async function restoreFromTrash(id, name) {
+    try {
+      const res = await fetch('api.php?action=restore_item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(data.message || `"${name}" restaurado con éxito`);
+        loadTrashView();
+      } else {
+        showToast(data.error || 'Error al restaurar', true);
+      }
+    } catch (e) {
+      showToast('Error de conexión', true);
+    }
+  }
+
+  async function purgeFromTrash(id, name) {
+    if (!confirm(`¿Estás seguro de eliminar permanentemente "${name}"?\nEsta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch('api.php?action=purge_item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(data.message || 'Elemento eliminado permanentemente');
+        loadTrashView();
+      } else {
+        showToast(data.error || 'Error al eliminar', true);
+      }
+    } catch (e) {
+      showToast('Error de conexión', true);
+    }
+  }
+
+  const btnEmptyTrash = document.getElementById('btnEmptyTrash');
+  if (btnEmptyTrash) {
+    btnEmptyTrash.addEventListener('click', async () => {
+      if (!confirm('¿Deseas vaciar por completo la Papelera de Reciclaje?\nTodos los archivos se eliminarán de forma definitiva y no podrán recuperarse.')) {
+        return;
+      }
+
+      try {
+        const res = await fetch('api.php?action=empty_trash', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast(data.message || 'Papelera vaciada');
+          loadTrashView();
+        } else {
+          showToast(data.error || 'Error al vaciar papelera', true);
+        }
+      } catch (e) {
+        showToast('Error de conexión', true);
+      }
+    });
+  }
+
+  // =========================================================================
+  // 11. DRAG & DROP MULTI-FILE UPLOADER
+  // =========================================================================
+  const dragOverlay = document.getElementById('dragDropOverlay');
+  const targetNameEl = document.getElementById('dragDropTargetName');
+  let dragCounter = 0;
+
+  window.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    if (driveState.inTrashView) return;
+    dragCounter++;
+    if (targetNameEl) {
+      targetNameEl.innerHTML = `Subiendo a: <strong>${escapeHtml(driveState.currentPath)}</strong>`;
+    }
+    dragOverlay.classList.add('active');
+  });
+
+  window.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+
+  window.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      dragOverlay.classList.remove('active');
+    }
+  });
+
+  window.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    dragCounter = 0;
+    dragOverlay.classList.remove('active');
+
+    if (driveState.inTrashView) {
+      showToast('No se pueden subir archivos dentro de la papelera', true);
+      return;
+    }
+
+    if (!driveState.user.is_admin && driveState.user.role !== 'collab') {
+      showToast('Tu cuenta no tiene permisos para subir archivos', true);
+      return;
+    }
+
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+
+    await uploadMultipleFiles(files);
+  });
+
+  async function uploadMultipleFiles(fileList) {
+    const total = fileList.length;
+    let uploadedCount = 0;
+
+    for (let i = 0; i < total; i++) {
+      const file = fileList[i];
+      showToast(`Subiendo archivo ${i + 1} de ${total}: "${file.name}"...`);
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('target_path', driveState.currentPath);
+
+      try {
+        const res = await fetch('api.php?action=upload_file', {
+          method: 'POST',
+          body: fd
+        });
+        const data = await res.json();
+        if (data.success) {
+          uploadedCount++;
+        } else {
+          showToast(`Error al subir ${file.name}: ${data.error}`, true);
+        }
+      } catch (err) {
+        showToast(`Error de conexión al subir ${file.name}`, true);
+      }
+    }
+
+    if (uploadedCount > 0) {
+      showToast(`¡${uploadedCount} archivo${uploadedCount === 1 ? '' : 's'} subido${uploadedCount === 1 ? '' : 's'} con éxito!`);
+      loadDirectory(driveState.currentPath);
+    }
+  }
+
+  // =========================================================================
+  // 12. MANUAL FILE UPLOAD & NEW FOLDER BUTTONS
   // =========================================================================
   const btnUpload = document.getElementById('btnUploadFile');
   const fileInput = document.getElementById('driveFileInput');
 
   if (btnUpload && fileInput) {
-    btnUpload.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', () => {
+    btnUpload.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', async () => {
       if (fileInput.files.length > 0) {
-        handleUpload(fileInput.files[0]);
+        await uploadMultipleFiles(fileInput.files);
         fileInput.value = '';
       }
     });
   }
 
-  async function handleUpload(file) {
-    const formData = new FormData();
-    formData.append('target_path', driveState.currentPath);
-    formData.append('file', file);
-
-    showToast(`Subiendo ${file.name}...`, false);
-
-    try {
-      const res = await fetch('api.php?action=upload_file', {
-        method: 'POST',
-        body: formData
-      });
-      const result = await res.json();
-      if (result.success) {
-        showToast('Archivo subido con éxito');
-        loadDirectory(driveState.currentPath);
-      } else {
-        showToast(result.error || 'Error al subir', true);
-      }
-    } catch (e) {
-      showToast('Error de conexión al subir archivo', true);
-    }
-  }
-
-  // =========================================================================
-  // 6. CREATE FOLDER
-  // =========================================================================
   const btnNewFolder = document.getElementById('btnNewFolder');
   const folderModal = document.getElementById('folderModal');
-  const formNewFolder = document.getElementById('formNewFolder');
+  const btnCloseFolder = document.getElementById('btnCloseFolderModal');
+  const formFolder = document.getElementById('formNewFolder');
 
-  if (btnNewFolder) {
+  if (btnNewFolder && folderModal) {
     btnNewFolder.addEventListener('click', () => {
+      folderModal.classList.add('active');
       document.getElementById('newFolderName').value = '';
-      folderModal.classList.add('show');
+      setTimeout(() => document.getElementById('newFolderName').focus(), 100);
+    });
+
+    btnCloseFolder.addEventListener('click', () => {
+      folderModal.classList.remove('active');
+    });
+
+    formFolder.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('newFolderName').value.trim();
+      if (!name) return;
+
+      try {
+        const res = await fetch('api.php?action=create_folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, parent_path: driveState.currentPath })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          folderModal.classList.remove('active');
+          showToast('Carpeta creada con éxito');
+          loadDirectory(driveState.currentPath);
+        } else {
+          showToast(data.error || 'Error al crear carpeta', true);
+        }
+      } catch (err) {
+        showToast('Error de conexión', true);
+      }
     });
   }
 
-  document.getElementById('btnCloseFolderModal').addEventListener('click', () => {
-    folderModal.classList.remove('show');
+  // =========================================================================
+  // 13. PREVIEW MODAL
+  // =========================================================================
+  function openPreview(file) {
+    const modal = document.getElementById('previewModal');
+    const title = document.getElementById('previewModalTitle');
+    const body = document.getElementById('previewModalBody');
+    const downloadBtn = document.getElementById('btnPreviewDownload');
+
+    title.textContent = file.name;
+    downloadBtn.href = `api.php?action=download&path=${encodeURIComponent(file.path)}`;
+
+    const ext = file.ext;
+    if (ext === 'pdf') {
+      body.innerHTML = `<iframe src="api.php?action=view&path=${encodeURIComponent(file.path)}" class="preview-iframe"></iframe>`;
+    } else if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+      body.innerHTML = `<img src="api.php?action=view&path=${encodeURIComponent(file.path)}" class="preview-img" alt="${escapeHtml(file.name)}">`;
+    } else if (['mp4', 'mov'].includes(ext)) {
+      body.innerHTML = `<video src="api.php?action=view&path=${encodeURIComponent(file.path)}" class="preview-video" controls autoplay></video>`;
+    } else {
+      body.innerHTML = `<iframe src="api.php?action=view&path=${encodeURIComponent(file.path)}" class="preview-iframe"></iframe>`;
+    }
+
+    modal.classList.add('active');
+  }
+
+  document.getElementById('btnClosePreview').addEventListener('click', () => {
+    const modal = document.getElementById('previewModal');
+    modal.classList.remove('active');
+    document.getElementById('previewModalBody').innerHTML = '';
   });
 
-  formNewFolder.addEventListener('submit', async (e) => {
+  // =========================================================================
+  // 14. VIEW TOGGLE (GRID / LIST)
+  // =========================================================================
+  document.querySelectorAll('.btn-view-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.btn-view-toggle').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      driveState.currentView = btn.dataset.view;
+      if (driveState.inTrashView) {
+        renderTrashView();
+      } else {
+        renderExplorer();
+      }
+    });
+  });
+
+  // =========================================================================
+  // 15. SEARCH INPUT
+  // =========================================================================
+  const searchInput = document.getElementById('driveSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      driveState.searchQuery = e.target.value;
+      if (!driveState.inTrashView) {
+        renderExplorer();
+      }
+    });
+  }
+
+  // =========================================================================
+  // 16. SIDEBAR NAVIGATION
+  // =========================================================================
+  document.getElementById('sidebarNavRoot').addEventListener('click', (e) => {
     e.preventDefault();
-    const name = document.getElementById('newFolderName').value.trim();
-    if (!name) return;
+    loadDirectory('GlobalMarket');
+  });
 
-    try {
-      const res = await fetch('api.php?action=create_folder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name, parent_path: driveState.currentPath })
-      });
-      const result = await res.json();
-      folderModal.classList.remove('show');
-      if (result.success) {
-        showToast('Carpeta creada con éxito');
-        loadDirectory(driveState.currentPath);
-      } else {
-        showToast(result.error || 'Error al crear carpeta', true);
-      }
-    } catch (e) {
-      showToast('Error de conexión', true);
-    }
+  document.getElementById('sidebarNavTrash').addEventListener('click', (e) => {
+    e.preventDefault();
+    loadTrashView();
   });
 
   // =========================================================================
-  // 7. DELETE ITEM
+  // 17. USER MANAGEMENT MODAL (ADMIN)
   // =========================================================================
-  async function deleteItem(path, name, isFolder) {
-    const msg = isFolder 
-      ? `¿Seguro que deseas eliminar la carpeta "${name}" y todo su contenido?`
-      : `¿Seguro que deseas eliminar el archivo "${name}"?`;
-
-    if (!confirm(msg)) return;
-
-    try {
-      const res = await fetch('api.php?action=delete_item', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: path })
-      });
-      const result = await res.json();
-      if (result.success) {
-        showToast(result.message || 'Eliminado con éxito');
-        loadDirectory(driveState.currentPath);
-      } else {
-        showToast(result.error || 'Error al eliminar', true);
-      }
-    } catch (e) {
-      showToast('Error de conexión al eliminar', true);
-    }
-  }
-
-  // =========================================================================
-  // 8. USER MANAGEMENT MODAL
-  // =========================================================================
-  const btnUsersModal = document.getElementById('btnManageUsers');
+  const btnManageUsers = document.getElementById('btnManageUsers');
   const usersModal = document.getElementById('usersModal');
-  const formCreateUser = document.getElementById('formCreateUser');
+  const btnCloseUsers = document.getElementById('btnCloseUsersModal');
 
-  if (btnUsersModal) {
-    btnUsersModal.addEventListener('click', () => {
+  if (btnManageUsers && usersModal) {
+    btnManageUsers.addEventListener('click', () => {
+      usersModal.classList.add('active');
       loadUsersList();
-      usersModal.classList.add('show');
+    });
+
+    btnCloseUsers.addEventListener('click', () => {
+      usersModal.classList.remove('active');
+    });
+
+    document.getElementById('formCreateUser').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('newUserName').value.trim();
+      const username = document.getElementById('newUserUsername').value.trim();
+      const email = document.getElementById('newUserEmail').value.trim();
+      const password = document.getElementById('newUserPassword').value.trim();
+      const role = document.getElementById('newUserRole').value;
+
+      try {
+        const res = await fetch('api.php?action=create_user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, username, email, password, role })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast(data.message || 'Usuario registrado con éxito');
+          document.getElementById('formCreateUser').reset();
+          loadUsersList();
+        } else {
+          showToast(data.error || 'Error al crear usuario', true);
+        }
+      } catch (err) {
+        showToast('Error de conexión', true);
+      }
     });
   }
-
-  document.getElementById('btnCloseUsersModal').addEventListener('click', () => {
-    usersModal.classList.remove('show');
-  });
 
   async function loadUsersList() {
     const tbody = document.getElementById('usersTableBody');
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:1.5rem;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando usuarios...</td></tr>';
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando usuarios...</td></tr>';
 
     try {
       const res = await fetch('api.php?action=get_users');
       const data = await res.json();
+
       if (data.success) {
         tbody.innerHTML = '';
         data.users.forEach(u => {
           const tr = document.createElement('tr');
-          const roleLabels = { admin: 'Administrador', client: 'Cliente', collab: 'Colaborador' };
-          
+          const isMe = u.username === driveState.user.name || u.id === (driveState.user.id || '');
+          const roleLabels = {
+            superadmin: '<span class="user-role-badge badge-superadmin"><i class="fa-solid fa-crown"></i> Superadmin</span>',
+            admin: '<span class="user-role-badge badge-admin">Admin</span>',
+            collab: '<span class="user-role-badge badge-collab">Colaborador</span>',
+            client: '<span class="user-role-badge badge-client">Cliente</span>'
+          };
+
           tr.innerHTML = `
-            <td><strong>${u.name}</strong><br><small class="text-muted">@${u.username}</small></td>
-            <td><span class="user-role-badge">${roleLabels[u.role] || u.role}</span></td>
-            <td>${u.email || '-'}</td>
-            <td><small class="text-muted">${u.created_at || 'Reciente'}</small></td>
+            <td>
+              <strong style="color: #ffffff;">${escapeHtml(u.name)}</strong><br>
+              <small style="color: var(--gold-light);">@${escapeHtml(u.username)}</small>
+            </td>
+            <td>${roleLabels[u.role] || u.role}</td>
+            <td>${escapeHtml(u.email || '—')}</td>
+            <td><small style="color: var(--text-muted);">${u.created_at || '—'}</small></td>
             <td style="text-align: right;">
-              <button type="button" class="btn btn-danger btn-sm btn-delete-user" data-id="${u.id}" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
+              ${!isMe && u.role !== 'superadmin' ? `
+                <button type="button" class="btn btn-danger btn-sm btn-del-user" data-id="${u.id}" title="Eliminar usuario">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              ` : '<small style="color: var(--text-muted);">Activo</small>'}
             </td>
           `;
 
-          const btnDel = tr.querySelector('.btn-delete-user');
-          if (btnDel) {
-            btnDel.addEventListener('click', async () => {
-              if (!confirm(`¿Eliminar al usuario ${u.name}?`)) return;
-              const res = await fetch('api.php?action=delete_user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: u.id })
-              });
-              const result = await res.json();
-              if (result.success) {
-                showToast('Usuario eliminado');
-                loadUsersList();
-              } else {
-                showToast(result.error || 'Error al eliminar', true);
-              }
-            });
+          const delBtn = tr.querySelector('.btn-del-user');
+          if (delBtn) {
+            delBtn.addEventListener('click', () => deleteUser(u.id, u.name));
           }
 
           tbody.appendChild(tr);
         });
       }
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="5" style="color:#ef4444; text-align:center;">Error al cargar usuarios</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ef4444;">Error al cargar usuarios</td></tr>';
     }
   }
 
-  formCreateUser.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const data = {
-      name: document.getElementById('newUserName').value.trim(),
-      username: document.getElementById('newUserUsername').value.trim(),
-      email: document.getElementById('newUserEmail').value.trim(),
-      password: document.getElementById('newUserPassword').value.trim(),
-      role: document.getElementById('newUserRole').value
-    };
+  async function deleteUser(id, name) {
+    if (!confirm(`¿Eliminar al usuario "${name}"?`)) return;
 
     try {
-      const res = await fetch('api.php?action=create_user', {
+      const res = await fetch('api.php?action=delete_user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ id })
       });
-      const result = await res.json();
-      if (result.success) {
-        showToast('Usuario creado correctamente');
-        formCreateUser.reset();
+      const data = await res.json();
+
+      if (data.success) {
+        showToast('Usuario eliminado con éxito');
         loadUsersList();
       } else {
-        showToast(result.error || 'Error al crear usuario', true);
+        showToast(data.error || 'Error al eliminar usuario', true);
       }
     } catch (e) {
       showToast('Error de conexión', true);
     }
-  });
-
-  // =========================================================================
-  // 9. SEARCH & VIEW TOGGLES & SIDEBAR LINKS
-  // =========================================================================
-  const searchInput = document.getElementById('driveSearchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      driveState.searchQuery = e.target.value;
-      renderExplorer();
-    });
   }
 
-  document.querySelectorAll('.btn-view-toggle').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.btn-view-toggle').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      driveState.currentView = btn.getAttribute('data-view');
-      renderExplorer();
-    });
-  });
+  // Escape HTML Helper
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
-  document.querySelectorAll('.sidebar-shortcut').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      document.querySelectorAll('.sidebar-shortcut').forEach(l => l.classList.remove('active'));
-      link.classList.add('active');
-      const targetPath = link.getAttribute('data-path');
-      loadDirectory(targetPath);
-    });
-  });
-
-  // =========================================================================
-  // 10. INITIAL RENDER
-  // =========================================================================
-  updateUIPermissions();
+  // Initial Render
   renderBreadcrumbs();
   renderExplorer();
+  renderSidebarFavorites();
 });

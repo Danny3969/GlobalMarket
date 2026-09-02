@@ -4,7 +4,7 @@
     "username": "admin",
     "name": "Administrador GlobalMarket",
     "email": "export@globalmarket-gm.com",
-    "role": "admin",
+    "role": "superadmin",
     "password_plain_fallback": "GlobalMarket2026!",
     "allowed_folders": ["*"],
     "status": "active",

@@ -4,20 +4,31 @@ require_once __DIR__ . '/auth.php';
 // Ensure user is logged in
 if (!is_drive_logged_in()) {
     http_response_code(401);
+    header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => 'Sesión expirada o no autenticada']);
     exit;
 }
 
 $currentUser = get_logged_drive_user();
 $isAdmin = is_drive_admin();
+$isSuperAdmin = is_drive_superadmin();
+$isCollab = is_drive_collab();
 $action = $_GET['action'] ?? '';
 
 $baseStorageDir = __DIR__ . '/data/storage';
+$trashStorageDir = $baseStorageDir . '/.trash';
+$trashIndexFile = __DIR__ . '/data/trash_index.json';
+$favoritesFile = __DIR__ . '/data/favorites.json';
+
+// Ensure directories exist
 if (!is_dir($baseStorageDir)) {
     @mkdir($baseStorageDir, 0755, true);
 }
 if (!is_dir($baseStorageDir . '/GlobalMarket')) {
     @mkdir($baseStorageDir . '/GlobalMarket', 0755, true);
+}
+if (!is_dir($trashStorageDir)) {
+    @mkdir($trashStorageDir, 0755, true);
 }
 
 // Global Recursive Directory Deletion Helper
@@ -31,15 +42,57 @@ function delete_dir_recursive($dir) {
     return @rmdir($dir);
 }
 
+// Trash Index Helpers
+function get_trash_index() {
+    global $trashIndexFile;
+    if (!file_exists($trashIndexFile)) {
+        return [];
+    }
+    $content = file_get_contents($trashIndexFile);
+    return json_decode($content, true) ?: [];
+}
+
+function save_trash_index($items) {
+    global $trashIndexFile;
+    $dir = dirname($trashIndexFile);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    return file_put_contents($trashIndexFile, json_encode($items, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+}
+
+// Favorites Helpers
+function get_favorites_list() {
+    global $favoritesFile;
+    if (!file_exists($favoritesFile)) {
+        return [];
+    }
+    $content = file_get_contents($favoritesFile);
+    return json_decode($content, true) ?: [];
+}
+
+function save_favorites_list($favs) {
+    global $favoritesFile;
+    $dir = dirname($favoritesFile);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    return file_put_contents($favoritesFile, json_encode($favs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+}
+
 // Path Sanitizer & Security Validator
 function get_safe_full_path($baseDir, $relativePath) {
     $cleanRel = trim($relativePath, "/\\ \t\n\r\0\x0B");
     $cleanRel = str_replace(['../', '..\\', '..'], '', $cleanRel);
     
+    // Disallow accessing .trash directly via standard tree
+    if (strpos($cleanRel, '.trash') !== false) {
+        return ['valid' => false, 'path' => null, 'exists' => false];
+    }
+    
     $targetPath = $baseDir . ($cleanRel !== '' ? '/' . $cleanRel : '/GlobalMarket');
     
     if (!file_exists($targetPath)) {
-        // Auto-create if it's within GlobalMarket
         if ($cleanRel === 'GlobalMarket') {
             @mkdir($targetPath, 0755, true);
         } else {
@@ -122,28 +175,32 @@ switch ($action) {
         $fullPath = $check['path'];
         $items = @scandir($fullPath) ?: [];
         $realBase = realpath($baseStorageDir);
+        $favList = get_favorites_list();
+        $favPaths = array_column($favList, 'path');
         
         $folders = [];
         $files = [];
         $totalSize = 0;
 
         foreach ($items as $item) {
-            if ($item === '.' || $item === '..' || $item === '.htaccess') continue;
+            if ($item === '.' || $item === '..' || $item === '.htaccess' || $item === '.trash') continue;
             
             $itemFullPath = $fullPath . '/' . $item;
             $relItemPath = trim(str_replace($realBase, '', $itemFullPath), "/\\");
+            $relItemPath = str_replace('\\', '/', $relItemPath);
             
             if (is_dir($itemFullPath)) {
                 $subItems = @scandir($itemFullPath) ?: [];
                 $childCount = 0;
                 foreach ($subItems as $si) {
-                    if ($si !== '.' && $si !== '..' && $si !== '.htaccess') $childCount++;
+                    if ($si !== '.' && $si !== '..' && $si !== '.htaccess' && $si !== '.trash') $childCount++;
                 }
                 $folders[] = [
                     'name' => $item,
                     'path' => $relItemPath,
                     'mtime' => date('d/m/Y H:i', filemtime($itemFullPath)),
-                    'items_count' => $childCount
+                    'items_count' => $childCount,
+                    'is_favorite' => in_array($relItemPath, $favPaths)
                 ];
             } elseif (is_file($itemFullPath)) {
                 $size = filesize($itemFullPath);
@@ -187,6 +244,7 @@ switch ($action) {
             'breadcrumbs' => $breadcrumbs,
             'folders' => $folders,
             'files' => $files,
+            'favorites' => $favList,
             'stats' => [
                 'folders_count' => count($folders),
                 'files_count' => count($files),
@@ -195,17 +253,18 @@ switch ($action) {
             'user' => [
                 'name' => $currentUser['name'],
                 'role' => $currentUser['role'],
+                'is_superadmin' => $isSuperAdmin,
                 'is_admin' => $isAdmin
             ]
         ], JSON_UNESCAPED_UNICODE);
         break;
 
     // =========================================================================
-    // 2. CREATE FOLDER (Admin only)
+    // 2. CREATE FOLDER (Admin or Collab)
     // =========================================================================
     case 'create_folder':
         header('Content-Type: application/json');
-        if (!$isAdmin) {
+        if (!$isAdmin && !$isCollab) {
             echo json_encode(['success' => false, 'error' => 'Permiso denegado']);
             exit;
         }
@@ -219,8 +278,7 @@ switch ($action) {
             exit;
         }
 
-        // Clean folder name
-        $cleanName = preg_replace('/[^a-zA-Z0-9_\-\. ]/', '_', $folderName);
+        $cleanName = preg_replace('/[^a-zA-Z0-9_\-\. áéíóúÁÉÍÓÚñÑ]/u', '_', $folderName);
         $checkParent = get_safe_full_path($baseStorageDir, $parentPath);
 
         if (!$checkParent['valid'] || !$checkParent['exists']) {
@@ -242,11 +300,11 @@ switch ($action) {
         break;
 
     // =========================================================================
-    // 3. UPLOAD FILE
+    // 3. UPLOAD FILE (Supports Drag & Drop)
     // =========================================================================
     case 'upload_file':
         header('Content-Type: application/json');
-        if (!$isAdmin && ($currentUser['role'] !== 'collab')) {
+        if (!$isAdmin && !$isCollab) {
             echo json_encode(['success' => false, 'error' => 'Permiso denegado para subir archivos']);
             exit;
         }
@@ -270,8 +328,7 @@ switch ($action) {
         }
 
         $origName = basename($file['name']);
-        // Sanitize filename
-        $cleanFileName = preg_replace('/[^a-zA-Z0-9_\-\. ]/', '_', $origName);
+        $cleanFileName = preg_replace('/[^a-zA-Z0-9_\-\. áéíóúÁÉÍÓÚñÑ]/u', '_', $origName);
         
         $destPath = $check['path'] . '/' . $cleanFileName;
         
@@ -309,7 +366,6 @@ switch ($action) {
         $fileName = basename($filePath);
         $fileSize = filesize($filePath);
 
-        // Send headers for secure download
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename="' . addslashes($fileName) . '"');
@@ -354,48 +410,7 @@ switch ($action) {
         exit;
 
     // =========================================================================
-    // 6. DELETE FILE OR FOLDER (Admin only)
-    // =========================================================================
-    case 'delete_item':
-        header('Content-Type: application/json');
-        if (!$isAdmin) {
-            echo json_encode(['success' => false, 'error' => 'Solo administradores pueden eliminar']);
-            exit;
-        }
-
-        $data = json_decode(file_get_contents('php://input'), true);
-        $reqPath = trim($data['path'] ?? '');
-
-        // Prevent deleting root GlobalMarket
-        if ($reqPath === 'GlobalMarket' || empty($reqPath)) {
-            echo json_encode(['success' => false, 'error' => 'No se puede eliminar la carpeta raíz']);
-            exit;
-        }
-
-        $check = get_safe_full_path($baseStorageDir, $reqPath);
-        if (!$check['valid'] || !$check['exists']) {
-            echo json_encode(['success' => false, 'error' => 'Elemento no encontrado']);
-            exit;
-        }
-
-        $target = $check['path'];
-        if (is_file($target)) {
-            if (@unlink($target)) {
-                echo json_encode(['success' => true, 'message' => 'Archivo eliminado']);
-            } else {
-                echo json_encode(['success' => false, 'error' => 'No se pudo eliminar el archivo']);
-            }
-        } elseif (is_dir($target)) {
-            if (delete_dir_recursive($target)) {
-                echo json_encode(['success' => true, 'message' => 'Carpeta eliminada con éxito']);
-            } else {
-                echo json_encode(['success' => false, 'error' => 'Error al eliminar carpeta']);
-            }
-        }
-        break;
-
-    // =========================================================================
-    // 7. RENAME ITEM (Admin only)
+    // 6. RENAME ITEM (Folders & Files)
     // =========================================================================
     case 'rename_item':
         header('Content-Type: application/json');
@@ -419,7 +434,7 @@ switch ($action) {
             exit;
         }
 
-        $cleanNewName = preg_replace('/[^a-zA-Z0-9_\-\. ]/', '_', $newName);
+        $cleanNewName = preg_replace('/[^a-zA-Z0-9_\-\. áéíóúÁÉÍÓÚñÑ]/u', '_', $newName);
         $parentDir = dirname($check['path']);
         $newFullPath = $parentDir . '/' . $cleanNewName;
 
@@ -429,14 +444,313 @@ switch ($action) {
         }
 
         if (rename($check['path'], $newFullPath)) {
-            echo json_encode(['success' => true, 'message' => 'Renombrado con éxito']);
+            // Update favorites if folder was renamed
+            $realBase = realpath($baseStorageDir);
+            $newRelPath = trim(str_replace($realBase, '', $newFullPath), "/\\");
+            $newRelPath = str_replace('\\', '/', $newRelPath);
+
+            $favs = get_favorites_list();
+            $favChanged = false;
+            foreach ($favs as $idx => $f) {
+                if ($f['path'] === $reqPath) {
+                    $favs[$idx]['path'] = $newRelPath;
+                    $favs[$idx]['name'] = $cleanNewName;
+                    $favChanged = true;
+                }
+            }
+            if ($favChanged) {
+                save_favorites_list($favs);
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Renombrado con éxito',
+                'new_path' => $newRelPath,
+                'new_name' => $cleanNewName
+            ]);
         } else {
             echo json_encode(['success' => false, 'error' => 'Error al renombrar']);
         }
         break;
 
     // =========================================================================
-    // 8. USER MANAGEMENT (Admin only)
+    // 7. MOVE TO TRASH (Soft Delete)
+    // =========================================================================
+    case 'move_to_trash':
+        header('Content-Type: application/json');
+        if (!$isAdmin && !$isCollab) {
+            echo json_encode(['success' => false, 'error' => 'Permiso denegado para enviar a la papelera']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $reqPath = trim($data['path'] ?? '');
+
+        if ($reqPath === 'GlobalMarket' || empty($reqPath)) {
+            echo json_encode(['success' => false, 'error' => 'No se puede eliminar la carpeta raíz']);
+            exit;
+        }
+
+        $check = get_safe_full_path($baseStorageDir, $reqPath);
+        if (!$check['valid'] || !$check['exists']) {
+            echo json_encode(['success' => false, 'error' => 'Elemento no encontrado']);
+            exit;
+        }
+
+        $target = $check['path'];
+        $isFolder = is_dir($target);
+        $baseName = basename($target);
+        $size = $isFolder ? 0 : filesize($target);
+        $trashId = 'trash_' . time() . '_' . uniqid();
+        $trashFileName = $trashId . '_' . $baseName;
+        $destTrashPath = $trashStorageDir . '/' . $trashFileName;
+
+        if (rename($target, $destTrashPath)) {
+            $trashIndex = get_trash_index();
+            $trashIndex[] = [
+                'id' => $trashId,
+                'name' => $baseName,
+                'original_path' => $reqPath,
+                'trash_filename' => $trashFileName,
+                'is_folder' => $isFolder,
+                'size' => $size,
+                'size_formatted' => $isFolder ? 'Carpeta' : format_file_size($size),
+                'deleted_by' => $currentUser['name'],
+                'deleted_at' => date('d/m/Y H:i:s')
+            ];
+            save_trash_index($trashIndex);
+
+            // Remove from favorites if it was a favorite folder
+            $favs = get_favorites_list();
+            $newFavs = array_values(array_filter($favs, function($f) use ($reqPath) {
+                return $f['path'] !== $reqPath;
+            }));
+            if (count($favs) !== count($newFavs)) {
+                save_favorites_list($newFavs);
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => ($isFolder ? 'Carpeta movida' : 'Archivo movido') . ' a la Papelera de Reciclaje'
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Error al mover a la papelera']);
+        }
+        break;
+
+    // =========================================================================
+    // 8. GET TRASH LIST
+    // =========================================================================
+    case 'get_trash':
+        header('Content-Type: application/json');
+        $trashItems = get_trash_index();
+        // Sort newest deleted first
+        usort($trashItems, function($a, $b) {
+            return strcmp($b['id'], $a['id']);
+        });
+
+        echo json_encode([
+            'success' => true,
+            'items' => $trashItems,
+            'count' => count($trashItems),
+            'user' => [
+                'name' => $currentUser['name'],
+                'role' => $currentUser['role'],
+                'is_admin' => $isAdmin
+            ]
+        ], JSON_UNESCAPED_UNICODE);
+        break;
+
+    // =========================================================================
+    // 9. RESTORE FROM TRASH
+    // =========================================================================
+    case 'restore_item':
+        header('Content-Type: application/json');
+        if (!$isAdmin && !$isCollab) {
+            echo json_encode(['success' => false, 'error' => 'Permiso denegado']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $trashId = trim($data['id'] ?? '');
+
+        $trashIndex = get_trash_index();
+        $targetItem = null;
+        $targetIdx = -1;
+
+        foreach ($trashIndex as $idx => $t) {
+            if ($t['id'] === $trashId) {
+                $targetItem = $t;
+                $targetIdx = $idx;
+                break;
+            }
+        }
+
+        if (!$targetItem) {
+            echo json_encode(['success' => false, 'error' => 'Elemento no encontrado en la papelera']);
+            exit;
+        }
+
+        $sourceTrashPath = $trashStorageDir . '/' . $targetItem['trash_filename'];
+        if (!file_exists($sourceTrashPath)) {
+            // Cleanup index if physical file is missing
+            array_splice($trashIndex, $targetIdx, 1);
+            save_trash_index($trashIndex);
+            echo json_encode(['success' => false, 'error' => 'El archivo físico no existe en la papelera']);
+            exit;
+        }
+
+        $origRel = $targetItem['original_path'];
+        $destPath = $baseStorageDir . '/' . $origRel;
+        $destParent = dirname($destPath);
+
+        if (!is_dir($destParent)) {
+            @mkdir($destParent, 0755, true);
+        }
+
+        // Avoid collision
+        if (file_exists($destPath)) {
+            $info = pathinfo($targetItem['name']);
+            if ($targetItem['is_folder']) {
+                $destPath = $destParent . '/' . $targetItem['name'] . '_restaurado_' . time();
+            } else {
+                $destPath = $destParent . '/' . $info['filename'] . '_restaurado_' . time() . '.' . ($info['extension'] ?? '');
+            }
+        }
+
+        if (rename($sourceTrashPath, $destPath)) {
+            array_splice($trashIndex, $targetIdx, 1);
+            save_trash_index($trashIndex);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Elemento restaurado con éxito a su ubicación original'
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Error al restaurar elemento']);
+        }
+        break;
+
+    // =========================================================================
+    // 10. PURGE ITEM (Permanent Delete from Trash)
+    // =========================================================================
+    case 'purge_item':
+        header('Content-Type: application/json');
+        if (!$isAdmin) {
+            echo json_encode(['success' => false, 'error' => 'Solo administradores pueden eliminar definitivamente']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $trashId = trim($data['id'] ?? '');
+
+        $trashIndex = get_trash_index();
+        $targetItem = null;
+        $targetIdx = -1;
+
+        foreach ($trashIndex as $idx => $t) {
+            if ($t['id'] === $trashId) {
+                $targetItem = $t;
+                $targetIdx = $idx;
+                break;
+            }
+        }
+
+        if (!$targetItem) {
+            echo json_encode(['success' => false, 'error' => 'Elemento no encontrado en la papelera']);
+            exit;
+        }
+
+        $sourceTrashPath = $trashStorageDir . '/' . $targetItem['trash_filename'];
+        if (file_exists($sourceTrashPath)) {
+            if ($targetItem['is_folder']) {
+                delete_dir_recursive($sourceTrashPath);
+            } else {
+                @unlink($sourceTrashPath);
+            }
+        }
+
+        array_splice($trashIndex, $targetIdx, 1);
+        save_trash_index($trashIndex);
+
+        echo json_encode(['success' => true, 'message' => 'Elemento eliminado permanentemente']);
+        break;
+
+    // =========================================================================
+    // 11. EMPTY TRASH
+    // =========================================================================
+    case 'empty_trash':
+        header('Content-Type: application/json');
+        if (!$isAdmin) {
+            echo json_encode(['success' => false, 'error' => 'Solo administradores pueden vaciar la papelera']);
+            exit;
+        }
+
+        $trashIndex = get_trash_index();
+        foreach ($trashIndex as $t) {
+            $path = $trashStorageDir . '/' . $t['trash_filename'];
+            if (file_exists($path)) {
+                $t['is_folder'] ? delete_dir_recursive($path) : @unlink($path);
+            }
+        }
+
+        save_trash_index([]);
+        echo json_encode(['success' => true, 'message' => 'Papelera vaciada completamente']);
+        break;
+
+    // =========================================================================
+    // 12. FAVORITES MANAGEMENT
+    // =========================================================================
+    case 'get_favorites':
+        header('Content-Type: application/json');
+        $favs = get_favorites_list();
+        echo json_encode(['success' => true, 'favorites' => $favs]);
+        break;
+
+    case 'toggle_favorite':
+        header('Content-Type: application/json');
+        $data = json_decode(file_get_contents('php://input'), true);
+        $folderPath = trim($data['path'] ?? '');
+        $folderName = trim($data['name'] ?? '');
+
+        if (empty($folderPath)) {
+            echo json_encode(['success' => false, 'error' => 'Ruta inválida']);
+            exit;
+        }
+
+        $favs = get_favorites_list();
+        $found = false;
+        $isFavNow = false;
+
+        foreach ($favs as $idx => $f) {
+            if ($f['path'] === $folderPath) {
+                array_splice($favs, $idx, 1);
+                $found = true;
+                $isFavNow = false;
+                break;
+            }
+        }
+
+        if (!$found) {
+            $favs[] = [
+                'path' => $folderPath,
+                'name' => !empty($folderName) ? $folderName : basename($folderPath),
+                'added_at' => date('d/m/Y H:i')
+            ];
+            $isFavNow = true;
+        }
+
+        save_favorites_list($favs);
+        echo json_encode([
+            'success' => true,
+            'is_favorite' => $isFavNow,
+            'favorites' => $favs,
+            'message' => $isFavNow ? 'Añadido a Favoritos' : 'Removido de Favoritos'
+        ]);
+        break;
+
+    // =========================================================================
+    // 13. USER MANAGEMENT (Admin / Superadmin only)
     // =========================================================================
     case 'get_users':
         header('Content-Type: application/json');
@@ -480,6 +794,12 @@ switch ($action) {
             exit;
         }
 
+        // Only superadmin can create superadmin/admin roles
+        if (($role === 'superadmin' || $role === 'admin') && !$isSuperAdmin) {
+            echo json_encode(['success' => false, 'error' => 'Solo el Super Administrador puede crear administradores']);
+            exit;
+        }
+
         $users = get_drive_users();
         foreach ($users as $u) {
             if ($u['username'] === $username) {
@@ -493,7 +813,7 @@ switch ($action) {
             'username' => $username,
             'name' => $name,
             'email' => $email,
-            'role' => in_array($role, ['admin', 'client', 'collab']) ? $role : 'client',
+            'role' => in_array($role, ['superadmin', 'admin', 'client', 'collab']) ? $role : 'client',
             'password_hash' => password_hash($password, PASSWORD_DEFAULT),
             'allowed_folders' => ['*'],
             'status' => 'active',
@@ -503,7 +823,7 @@ switch ($action) {
         $users[] = $newUser;
         save_drive_users($users);
 
-        echo json_encode(['success' => true, 'message' => 'Usuario creado con éxito']);
+        echo json_encode(['success' => true, 'message' => 'Usuario registrado con éxito']);
         break;
 
     case 'delete_user':
@@ -527,6 +847,10 @@ switch ($action) {
 
         foreach ($users as $u) {
             if ($u['id'] === $userId) {
+                if ($u['role'] === 'superadmin' && !$isSuperAdmin) {
+                    echo json_encode(['success' => false, 'error' => 'No puedes eliminar a un Super Administrador']);
+                    exit;
+                }
                 $found = true;
                 continue;
             }
