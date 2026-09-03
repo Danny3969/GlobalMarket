@@ -80,6 +80,13 @@ GlobalMarket/
    * Compresión `mod_deflate` activa.
    * `ExpiresDefault` configurado para caché de 1 año en imágenes y 1 mes en estilos y scripts.
    * Puntuación de carga casi instantánea (< 0.5s) al no depender de plugins pesados de WordPress.
+5. **GlobalMarket Cloud Drive & Intranet (`/drive/`):**
+   * Sistema privado de almacenamiento en la nube con autenticación en PHP.
+   * Gestión de usuarios y roles por pestañas (Directorio, Creación y Edición de credenciales/roles: Superadmin, Admin, User).
+   * Drag & Drop para subida de archivos, papelera de reciclaje, carpetas favoritas, renombrado y menú contextual de 3 puntos.
+   * Enlaces de acceso rápido a Webmail corporativo e ícono de candado de seguridad en la barra de navegación web.
+6. **Landing Pages Individuales y Generador Builder (`builder.php` / `build_pages.py`):**
+   * Páginas dedicadas completas para 8 productos con ficha técnica B2B, tabla nutricional, cadena de frío y cotizador directo.
 
 ---
 
