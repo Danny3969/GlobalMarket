@@ -90,6 +90,24 @@ GlobalMarket/
 
 ---
 
+## 🔑 6. Consolas de Administración y Accesos Privados del Proyecto
+
+### A. Consola de Administración CMS Pro (`/admin/`)
+* **URL:** [https://globalmarket-gm.com/admin/](https://globalmarket-gm.com/admin/)
+* **Login:** `https://globalmarket-gm.com/admin/login.php`
+* **Usuario:** `admin`
+* **Contraseña:** `GlobalMarket2026!`
+* **Módulos:** Gestor de Productos y Galería Drag & Drop, Reconstructor Automático de Páginas (`builder.php`), Editor de Contenido Principal, Bandeja de Cotizaciones RFQ (`quotes.json`) y Configuración de WhatsApp/SEO.
+
+### B. GlobalMarket Cloud Drive & Intranet (`/drive/`)
+* **URL:** [https://globalmarket-gm.com/drive/](https://globalmarket-gm.com/drive/)
+* **Login:** `https://globalmarket-gm.com/drive/login.php`
+* **Superadmin:** `admin` / `GlobalMarket2026!` *(Acceso total y gestión de usuarios/roles)*
+* **Cliente Demo:** `cliente` / `Cliente2026!` *(Acceso a archivos compartidos de exportación)*
+* **Módulos:** Subida Drag & Drop, menú contextual de 3 puntos, gestión de usuarios/roles por pestañas, favoritos, papelera y Webmail.
+
+---
+
 ## 5. 🚀 Cómo Continuar o Modificar el Proyecto desde Otra Computadora
 
 Si te conectas desde otro equipo o abres una nueva sesión:
